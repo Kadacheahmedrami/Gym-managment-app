@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
-import 'package:hamza_gym/main.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -97,11 +97,40 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+      // Read the image file as bytes
+      final imageBytes = await File(pickedFile.path).readAsBytes();
+
+      // Decode the image to modify it
+      img.Image? originalImage = img.decodeImage(imageBytes);
+
+      if (originalImage != null) {
+        // Resize the image to a smaller size, e.g., 300x300
+        img.Image resizedImage = img.copyResize(originalImage, width: 300, height: 300);
+
+        // Encode the resized image back to a file
+        final resizedImageFile = File(pickedFile.path)
+          ..writeAsBytesSync(img.encodeJpg(resizedImage));
+
+        // Get the file size in bytes
+        int fileSizeInBytes = resizedImageFile.lengthSync();
+
+        // Convert to KB
+        double fileSizeInKB = fileSizeInBytes / 1024;
+
+        // Convert to MB (optional)
+        double fileSizeInMB = fileSizeInKB / 1024;
+
+        print('File size: ${fileSizeInBytes} bytes');
+        print('File size: ${fileSizeInKB.toStringAsFixed(2)} KB');
+        print('File size: ${fileSizeInMB.toStringAsFixed(2)} MB');
+
+        setState(() {
+          _imageFile = resizedImageFile;
+        });
+      }
     }
   }
+
 
   bool _validateFields() {
     // Check if the required fields are not empty
@@ -188,8 +217,7 @@ void _onConfirm() {
           TextButton(
       onPressed: () async {
   // Delay closing the dialog to ensure it is fully dismissed
-  Future.delayed(Duration(milliseconds: 100), () async {
-    String? imageUrl;
+     Future.delayed(Duration(milliseconds: 100), () async {String? imageUrl;
 
     // Show loading indicator after dialog is dismissed
   
