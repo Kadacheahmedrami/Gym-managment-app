@@ -85,13 +85,14 @@ CollectionReference clients = FirebaseFirestore.instance.collection('clients');
       'plan': plan,
       'paidAmount': paidAmount,
       'balance': balance,
-      'registrationDate': registrationDate,
+      'reg_date': registrationDate,
       'gender': gender,
       'email': email,
-      'birthDate': birthDate,
+      'birth_date': birthDate,
+
       'address': address,
-      'membershipExpiration': membershipExpiration,
-      'imageUrl': imageUrl,
+      'exp_date': membershipExpiration,
+      'image_path': imageUrl,
     });
     return docRef;
   }
