@@ -1,10 +1,17 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
+import 'package:hive/hive.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'dart:io';
+
+import 'local.dart';
+import 'main.dart';
 
 const Color back = Color(0xff1c2126);
 const Color shadow = Color(0xff2a3036);
@@ -15,13 +22,25 @@ List plans = [
   {'name': '3 months', 'days': 90, 'price': 5000},
   {'name': '6 months', 'days': 180, 'price': 9000},
 ];
-
 class MembershipFormPage extends StatefulWidget {
+
+
+  const MembershipFormPage({Key? key}) : super(key: key);
+
   @override
   _MembershipFormPageState createState() => _MembershipFormPageState();
 }
 
 class _MembershipFormPageState extends State<MembershipFormPage> {
+
+
+
+
+
+
+
+
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _numberController = TextEditingController();
   final TextEditingController _planController = TextEditingController();
@@ -45,30 +64,38 @@ class _MembershipFormPageState extends State<MembershipFormPage> {
 
 CollectionReference clients = FirebaseFirestore.instance.collection('clients');
 
-  Future<void> addUser(String name, String number, String plan, 
-  String paidAmount, String balance, String regDate, String gender, 
-  String email, String birthDate, String address,String expire
-  , var imagePath 
-  ) {
-    // Call the user's CollectionReference to add a new user
-    return clients
-        .add({
-          'name': name, // John Doe
-          'number': number, // User's contact number
-          'plan': plan, // User's plan (e.g., monthly, yearly)
-          'paidAmount': paidAmount, // Amount paid by the user
-          'balance': balance, // Remaining balance
-          'reg_date': regDate, // Registration date
-          'gender': gender, // Gender of the user
-          'email': email, // User's email
-          'birth_date': birthDate, // User's birth date
-          'address': address,
-          'exp_date':expire, // User's address
-          'image_path':imagePath,
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+  Future<DocumentReference> addUser(
+      String name,
+      String number,
+      String plan,
+      String paidAmount,
+      String balance,
+      String registrationDate,
+      String gender,
+      String email,
+      String birthDate,
+      String address,
+      String membershipExpiration,
+      String? imageUrl,
+      ) async {
+    // Add a new document with a generated ID
+    DocumentReference docRef = await FirebaseFirestore.instance.collection('clients').add({
+      'name': name,
+      'number': number,
+      'plan': plan,
+      'paidAmount': paidAmount,
+      'balance': balance,
+      'registrationDate': registrationDate,
+      'gender': gender,
+      'email': email,
+      'birthDate': birthDate,
+      'address': address,
+      'membershipExpiration': membershipExpiration,
+      'imageUrl': imageUrl,
+    });
+    return docRef;
   }
+
 String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
   DateTime expirationDate = registrationDate.add(Duration(days: daysLeft));
   
@@ -90,6 +117,7 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
     _registrationDateController.dispose();
     _genderController.dispose();
     _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -190,6 +218,7 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
     );
   }
 void _onConfirm() {
+
   if (_validateFields()) {
     final String name = _nameController.text;
     final String number = _numberController.text;
@@ -215,64 +244,81 @@ void _onConfirm() {
         ),
         actions: [
           TextButton(
-      onPressed: () async {
-  // Delay closing the dialog to ensure it is fully dismissed
-     Future.delayed(Duration(milliseconds: 100), () async {String? imageUrl;
+          onPressed: () async {
+    // Show a loading indicator
+    showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+    backgroundColor: shadow,
+    content: Container(
+    width: 100,
+    height: 400,
+    child: Center(child: CircularProgressIndicator()),
+    ),
+    ),
+    );
 
-    // Show loading indicator after dialog is dismissed
-  
-  showDialog(
-      context: context,
-      builder: (context) =>  
-      AlertDialog(
-        
-        backgroundColor: shadow,
-        content:
-        
-         
-         Container(width:100,height:400,
-         child:  Center(child: CircularProgressIndicator() ,) ,)
-      ,)
-      );
+    String? imageUrl;
 
-    if (_imageFile == null) {
-      imageUrl = 'none';
+    // Upload image if available
+    if (_imageFile != null) {
+    var refStorage = FirebaseStorage.instance.ref('${name}.jpg');
+    await refStorage.putFile(_imageFile!);
+    imageUrl = await refStorage.getDownloadURL();
+    print(imageUrl);
     } else {
-      var refStorage = FirebaseStorage.instance.ref('${name}.jpg');
-      await refStorage.putFile(_imageFile!);
-      imageUrl = await refStorage.getDownloadURL();
-      print(imageUrl);
+    imageUrl = 'none';
     }
-  
-    await addUser(
-      name,
-      number,
-      plan,
-      paidAmount,
-      balance,
-      registrationDate,
-      gender,
-      email,
-      birthDate,
-      address,
-      calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
-      imageUrl,
+
+    // Add the user to Firestore and get the document ID
+    DocumentReference docRef = await addUser(
+    name,
+    number,
+    plan,
+    paidAmount,
+    balance,
+    registrationDate,
+    gender,
+    email,
+    birthDate,
+    address,
+    calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
+    imageUrl,
     );
 
-    // Stop loading indicator and navigate to the next page
- 
+    // Use the Firestore-generated document ID
+    String id = docRef.id;
 
+    User newUser = User(
+    id: id,
+    name: name,
+    gender: gender,
+    membershipType: plan,
+    membershipExpiration: calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
+    registrationDate: registrationDate,
+    age: 20,
+    address: address,
+    phone: number,
+    email: email,
+    balance: double.parse(balance),
+    image_Path: imageUrl,
+    );
+
+    // Save the user to the Hive local database
+    var clientBox = Hive.box<User>('clients');
+    await clientBox.add(newUser);
+
+    // Navigate to the next page and remove the loading indicator
     Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '')),
-      (Route<dynamic> route) => false,
+    context,
+    MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '',fix: true,)),
+    (Route<dynamic> route) => false,
     );
-  });
+    },
 
-  
-},
 
-            child: const Text('OK', style: TextStyle(color: green)),
+
+        child: const Text('OK', style: TextStyle(color: green)),
           ),
           TextButton(
             onPressed: () {
@@ -322,6 +368,8 @@ void _onConfirm() {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       backgroundColor: back,
       appBar: AppBar(
@@ -360,6 +408,7 @@ void _onConfirm() {
                 SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed:(){
+
                   _onConfirm();
                   },
                   style: ElevatedButton.styleFrom(

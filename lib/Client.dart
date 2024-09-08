@@ -5,11 +5,34 @@ import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
 
 import 'package:hamza_gym/main.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+
+import 'local.dart';
 
 Color gren = const Color(0xffEDFE10);
 Color back = const Color(0xff1c2126);
 Color shadow = const Color(0xff2a3036);
+
+Future<void> deleteUserById(String userId) async {
+  // Open the Hive box
+  var userBox = Hive.box<User>('clients');
+
+  // Find the user by id
+  final userToDelete = userBox.values.firstWhere(
+        (user) => user.id == userId,
+     // Return null if no user is found
+  );
+
+  if (userToDelete != null) {
+    // Delete the user from the box
+    await userToDelete.delete();
+    print('User with id $userId deleted.');
+  } else {
+    print('User with id $userId not found.');
+  }
+}
+
 
 class ProfilePage extends StatefulWidget {
   final Client client;
@@ -150,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   .update({title: controller.text});
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '')),
+                MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '',fix: true,)),
                 (Route<dynamic> route) => false,
               );
             },
@@ -274,10 +297,10 @@ class _ProfilePageState extends State<ProfilePage> {
     // Delete the file
     await storageRef.delete();
                 }
-       
+                deleteUserById(widget.client.id);
               Navigator.pushAndRemoveUntil(
     context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',)),
+    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
     (Route<dynamic> route) => false,  // This removes all the previous routes
   );
              // Pop the profile page
@@ -302,7 +325,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: back,
-        title: Text('${widget.client.name}\'s Profile', style: TextStyle(color: gren)),
+        title: Text('${widget.client.id}\'s Profile', style: TextStyle(color: gren)),
         elevation: 0,
         actions: [
           IconButton(

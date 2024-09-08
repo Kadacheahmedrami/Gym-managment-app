@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
@@ -11,8 +14,13 @@ import 'package:hamza_gym/login.dart';
 import 'package:hamza_gym/notify.dart';
 import 'package:hamza_gym/stat.dart';
 import 'package:hamza_gym/trainers.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'local.dart';
 
 
 
@@ -58,16 +66,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // Initialize Firestore
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  // Configure Firestore settings
-  firestore.settings = Settings(
-    persistenceEnabled: false,
-  );
+  await Hive.initFlutter();
+  Hive.registerAdapter(UserAdapter());
+  await Hive.openBox<User>('clients');
 
   runApp(MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -112,22 +118,19 @@ class SplashScreen extends StatelessWidget {
   }
 }
 
-
-
 class Navigation extends StatefulWidget {
-  const Navigation({super.key});
+  final bool? fix; // Optional boolean parameter
+
+  const Navigation({Key? key, this.fix}) : super(key: key);
 
   @override
   _NavigationState createState() => _NavigationState();
 }
 
-
-
-
 class _NavigationState extends State<Navigation> {
 
 
-  
+
 
     int _currentIndex = 0;
 
@@ -139,51 +142,207 @@ class _NavigationState extends State<Navigation> {
   }
 List<Client> clients = [];
 
+    StreamSubscription? _internetConnectionStreamSubscription;
 
-void initState() {
+     bool isConnectedToInternet =false;
+
+     bool connectionChanged = false;
+    bool usedOnce = true;
+
+    void initState() {
+      super.initState();
+
+      _internetConnectionStreamSubscription =
+          InternetConnection().onStatusChange.listen((event) {
 
 
-  
-    super.initState();
-  FirebaseFirestore.instance
-    .collection('clients')
-    .get()
-    .then((QuerySnapshot querySnapshot) {
-      int birth_date ;
-        querySnapshot.docs.forEach((doc) {
-          if(doc['birth_date']=='')
-          {
-            birth_date=DateTime.now().year;
-          }
-          else{
-       birth_date= DateTime.parse(doc['birth_date']).year;
-          }
-   
-          setState(() {
-            
-            clients.add(
-              Client(
-                id:doc.id,
-                name: doc['name'],
-                gender: doc['gender'],
-                 balance: double.parse(doc['balance']),
-                 membershipType: doc['plan'],
-                 address: doc['address'],
-                 age: DateTime.now().year - birth_date,
-                 email: doc['email'],
-                 phone: doc['number'],
-                 membershipExpiration: DateTime.parse(doc['exp_date']),
-                 registrationDate: DateTime.parse(doc['reg_date']),
-                 image_Path: doc['image_path']
-                              )
-            );
+            switch (event) {
+              case InternetStatus.connected:
+                setState(() {
+                  print('case 1');
+                  isConnectedToInternet = true;
+                  connectionChanged=true;
+                  if(usedOnce)
+                    {
+                      usedOnce= false;
+                      loadData();
+                    }
+
+
+                });
+                break;
+              case InternetStatus.disconnected:
+                setState(() {
+                  print('case 2');
+                  isConnectedToInternet = false;
+                  connectionChanged=true;
+                  if(usedOnce)
+                  {
+                    usedOnce= false;
+                    loadData();
+                  }
+
+                });
+                break;
+              default:
+                setState(() {
+                  print('case 3');
+                  isConnectedToInternet = false;
+                  connectionChanged=true;
+                  if(usedOnce)
+                  {
+                    usedOnce= false;
+                    loadData();
+                  }
+
+                });
+                break;
+            }
           });
 
-        });
-        print(clients);
-    });
+    if(widget.fix == true ){
+      print("damn again  === ${widget.fix}");
+      loadData();
 
-  }
+    }
+
+    }
+
+    @override
+    void dispose() {
+      _internetConnectionStreamSubscription?.cancel();
+      super.dispose();
+    }
+
+
+    Future<void> loadData() async {
+
+      print('stats   =============  $isConnectedToInternet');
+      if (isConnectedToInternet) {
+        var clientBox = Hive.box<User>('clients');
+
+        if(clientBox.isEmpty)
+          {
+            // Load from Firestore
+            print("hive box is empty");
+            FirebaseFirestore.instance
+                .collection('clients')
+                .get()
+                .then((QuerySnapshot querySnapshot) async {
+              int birthDate;
+
+              // Clear the local storage before syncing new data
+
+              await clientBox.clear();
+
+              querySnapshot.docs.forEach((doc) {
+                if (doc['birth_date'] == '') {
+                  birthDate = DateTime.now().year;
+                } else {
+                  birthDate = DateTime.parse(doc['birth_date']).year;
+                }
+
+                Client client = Client(
+                  id: doc.id,
+                  name: doc['name'],
+                  gender: doc['gender'],
+                  balance: double.parse(doc['balance']),
+                  membershipType: doc['plan'],
+                  address: doc['address'],
+                  age: DateTime.now().year - birthDate,
+                  email: doc['email'],
+                  phone: doc['number'],
+                  membershipExpiration: DateTime.parse(doc['exp_date']),
+                  registrationDate: DateTime.parse(doc['reg_date']),
+                  image_Path: doc['image_path'],
+                );
+
+
+                clientBox.put(doc.id, User(
+                  id: doc.id,
+                  name: doc['name'],
+                  gender: doc['gender'],
+                  membershipType: doc['plan'],
+                  membershipExpiration: doc['exp_date'],
+                  registrationDate: doc['reg_date'],
+                  age: DateTime.now().year - birthDate,
+                  address: doc['address'],
+                  phone: doc['number'],
+                  email: doc['email'],
+                  balance: double.parse(doc['balance']),
+                  image_Path: doc['image_path'],
+                ));
+
+
+                setState(() {
+                  clients.add(client);
+                });
+
+
+              });
+
+
+
+
+
+            });
+          }
+            else
+              {
+                print("hive box is Not empty");
+
+                setState(() {
+                  List<User> users=[];
+                  users = clientBox.values.toList();
+                  for (var usr in users){
+                    Client client = Client(
+                      id: usr.id,
+                      name: usr.name,
+                      gender: usr.gender,
+                      membershipType: usr.membershipType,
+                      membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
+                      registrationDate:DateTime.parse(usr.registrationDate) ,
+                      age: usr.age,
+                      address: usr.address,
+                      phone: usr.phone,
+                      email: usr.email,
+                      balance: usr.balance,
+                      image_Path: usr.image_Path == '' ? 'none' : usr.image_Path,
+                    );
+                    clients.add(client);
+                  }
+                });
+              }
+
+        print("online data base =========== $clients");
+      } else {
+        // Load from Hive
+        var clientBox = Hive.box<User>('clients');
+        setState(() {
+          List<User> users=[];
+          users = clientBox.values.toList();
+          for (var usr in users){
+            Client client = Client(
+              id: usr.id,
+              name: usr.name,
+              gender: usr.gender,
+              membershipType: usr.membershipType,
+              membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
+              registrationDate:DateTime.parse(usr.registrationDate) ,
+              age: usr.age,
+              address: usr.address,
+              phone: usr.phone,
+              email: usr.email,
+              balance: usr.balance,
+              image_Path: usr.image_Path,
+            );
+            clients.add(client);
+          }
+        });
+
+        print("offline data base =========== $clients");
+      }
+    }
 
 
 

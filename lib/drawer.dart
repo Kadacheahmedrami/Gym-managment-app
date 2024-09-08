@@ -6,7 +6,8 @@ class CustomDrawer extends StatelessWidget {
   
    final email;
   final password;
-  const CustomDrawer({required  this.email , required this.password,super.key});
+  final bool? fix;
+  const CustomDrawer({required  this.email , required this.password,this.fix,super.key});
   @override
   Widget build(BuildContext context) {
     return 

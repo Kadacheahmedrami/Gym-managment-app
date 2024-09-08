@@ -7,7 +7,8 @@ import 'package:hamza_gym/main.dart';
 class Draweranimation extends StatefulWidget {
   final email;
   final password;
-  const Draweranimation({required  this.email , required this.password,super.key});
+  final bool? fix;
+  const Draweranimation({required  this.email , required this.password,this.fix,super.key});
 
   @override
   _DraweranimationState createState() => _DraweranimationState();
@@ -82,7 +83,7 @@ class _DraweranimationState extends State<Draweranimation>
         ),
         child: Stack(
           children: [
-            Positioned(child: CustomDrawer(email: widget.email,password: widget.password,)),
+            Positioned(child: CustomDrawer(email: widget.email,password: widget.password,fix: widget.fix,)),
             Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()..setEntry(3,2,0.001)..rotateY(_rotateanimation.value- 30* _rotateanimation.value * pi / 180),
@@ -92,7 +93,7 @@ class _DraweranimationState extends State<Draweranimation>
                 scale: _scaleAnimation.value,
                 child: ClipRRect(
                   borderRadius: BorderRadius.all(Radius.circular(_curveanimation.value)),
-                  child: Navigation(),
+                  child: Navigation(fix: widget.fix,),
                 ),
               ),
             ) ,
