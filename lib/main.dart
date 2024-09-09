@@ -307,7 +307,7 @@ List<Client> clients = [];
                       phone: usr.phone,
                       email: usr.email,
                       balance: usr.balance,
-                      image_Path: usr.image_Path == '' ? 'none' : usr.image_Path,
+                      image_Path: usr.image_Path == '' ? 'none' : usr.image_Path!,
                     );
                     clients.add(client);
                   }
@@ -334,7 +334,7 @@ List<Client> clients = [];
               phone: usr.phone,
               email: usr.email,
               balance: usr.balance,
-              image_Path: usr.image_Path,
+              image_Path: usr.image_Path!,
             );
             clients.add(client);
           }

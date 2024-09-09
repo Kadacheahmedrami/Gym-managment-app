@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
@@ -10,9 +10,6 @@ import 'package:intl/intl.dart';
 
 import 'local.dart';
 
-Color gren = const Color(0xffEDFE10);
-Color back = const Color(0xff1c2126);
-Color shadow = const Color(0xff2a3036);
 
 Future<void> deleteUserById(String userId) async {
   // Open the Hive box
@@ -32,6 +29,54 @@ Future<void> deleteUserById(String userId) async {
     print('User with id $userId not found.');
   }
 }
+
+Future<void> updateUser(String userId, String? title, dynamic value) async {
+  var userBox = Hive.box<User>('clients');
+
+  final userToUpdate = userBox.values.firstWhere(
+        (user) => user.id == userId,
+
+  );
+
+  if (userToUpdate != null && title != null) {
+    switch (title) {
+      case 'name':
+        userToUpdate.name = value;
+        break;
+      case 'gender':
+        userToUpdate.gender = value;
+        break;
+      case 'plan':
+        userToUpdate.membershipType = value;
+        break;
+      case 'exp_date':
+        userToUpdate.membershipExpiration = value;
+        break;
+      case 'address':
+        userToUpdate.address = value;
+        break;
+      case 'number':
+        userToUpdate.phone = value;
+        break;
+      case 'email':
+        userToUpdate.email = value;
+        break;
+      case 'balance':
+        userToUpdate.balance = value;
+        break;
+      default:
+      // Handle unknown titles if necessary
+        break;
+    }
+
+    await userToUpdate.save(); // Save the updated user object back to Hive
+  } else {
+    // Handle the case where the user is not found or title is invalid
+    print('User not found or invalid title provided.');
+  }
+}
+
+
 
 
 class ProfilePage extends StatefulWidget {
@@ -167,16 +212,23 @@ class _ProfilePageState extends State<ProfilePage> {
           TextButton(
             onPressed: () async {
               onSave(controller.text);
+
+              await updateUser(widget.client.id, title, controller.text);
+
               await FirebaseFirestore.instance
                   .collection('clients')
                   .doc(widget.client.id)
                   .update({title: controller.text});
+
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '',fix: true,)),
-                (Route<dynamic> route) => false,
+                    (Route<dynamic> route) => false,
               );
+
             },
+
+
             child: const Text('Save'),
           ),
           TextButton(
@@ -254,12 +306,25 @@ class _ProfilePageState extends State<ProfilePage> {
    print(updatedBalance.toString());
    print( plans[selectedPlanIndex]['name']);
 
+                var userBox = Hive.box<User>('clients');
 
-                 await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).update({'balance':updatedBalance.toString() , 'plan' : plans[selectedPlanIndex]['name'],'exp_date':expirationDate.toIso8601String().substring(0, 10)});
+                // Find the user by id
+                final userToUpdate = userBox.values.firstWhere(
+                      (user) => user.id == widget.client.id,
+                  // Return null if no user is found
+                );
+
+                userToUpdate.balance = updatedBalance;
+                userToUpdate.membershipType = plans[selectedPlanIndex]['name'] ;
+                userToUpdate.membershipExpiration =  expirationDate.toIso8601String().substring(0, 10);
+
+                await userToUpdate.save();
+
+                await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).update({'balance':updatedBalance.toString() , 'plan' : plans[selectedPlanIndex]['name'],'exp_date':expirationDate.toIso8601String().substring(0, 10)});
                 
                        Navigator.pushAndRemoveUntil(
     context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',)),
+    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
     (Route<dynamic> route) => false,  // This removes all the previous routes
   );
               },

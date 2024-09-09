@@ -6,40 +6,40 @@ part 'local.g.dart';
 @HiveType(typeId: 0)
 class User extends HiveObject {
   @HiveField(0)
-  final String id;
+  String id;
 
   @HiveField(1)
-  final String name;
+  String name;
 
   @HiveField(2)
-  final String gender;
+  String gender;
 
   @HiveField(3)
-  final String membershipType;
+  String membershipType;
 
   @HiveField(4)
-  final String membershipExpiration;
+  String membershipExpiration;
 
   @HiveField(5)
-  final String registrationDate;
+  String registrationDate;
 
   @HiveField(6)
-  final int age;
+  int age;
 
   @HiveField(7)
-  final String address;
+  String address;
 
   @HiveField(8)
-  final String phone;
+  String phone;
 
   @HiveField(9)
-  final String email;
+  String email;
 
   @HiveField(10)
-  final double balance;
+  double balance;
 
   @HiveField(11)
-  final String image_Path;
+  String? image_Path;
 
   User({
     required this.id,
@@ -53,9 +53,10 @@ class User extends HiveObject {
     required this.phone,
     required this.email,
     required this.balance,
-    required this.image_Path,
+    this.image_Path,
   });
 }
+
 @HiveType(typeId: 1)
 class Demand extends HiveObject {
   @HiveField(0)

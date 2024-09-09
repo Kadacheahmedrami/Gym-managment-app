@@ -52,6 +52,8 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   internet_connection_checker_plus: ^2.5.1
+  internet_connection_checker: ^2.0.0
+  http: ^1.2.2
 
 
   # The following adds the Cupertino Icons font to your application.

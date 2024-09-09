@@ -1,21 +1,29 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
 import 'package:hive/hive.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 import 'local.dart';
 import 'main.dart';
 
-const Color back = Color(0xff1c2126);
-const Color shadow = Color(0xff2a3036);
-const Color green = Color(0xffEDFE10);
+Future<bool> isConnected() async {
+  try {
+    final response = await http.get(Uri.parse('https://www.google.com'));
+    return response.statusCode == 200; // 200 means OK
+  } catch (e) {
+    print('Error checking internet connectivity: $e');
+    return false; // Error means not connected
+  }
+}
+
 
 List plans = [
   {'name': '1 month', 'days': 30, 'price': 1800},
@@ -34,6 +42,9 @@ class MembershipFormPage extends StatefulWidget {
 class _MembershipFormPageState extends State<MembershipFormPage> {
 
 
+
+  late ConnectivityResult _connectivityResult;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
 
 
@@ -212,7 +223,7 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: green)),
+            child: Text('OK', style: TextStyle(color: gren)),
           ),
         ],
       ),
@@ -259,67 +270,83 @@ void _onConfirm() {
     ),
     );
 
-    String? imageUrl;
-
-    // Upload image if available
-    if (_imageFile != null) {
-    var refStorage = FirebaseStorage.instance.ref('${name}.jpg');
-    await refStorage.putFile(_imageFile!);
-    imageUrl = await refStorage.getDownloadURL();
-    print(imageUrl);
-    } else {
-    imageUrl = 'none';
-    }
-
-    // Add the user to Firestore and get the document ID
-    DocumentReference docRef = await addUser(
-    name,
-    number,
-    plan,
-    paidAmount,
-    balance,
-    registrationDate,
-    gender,
-    email,
-    birthDate,
-    address,
-    calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
-    imageUrl,
-    );
-
-    // Use the Firestore-generated document ID
-    String id = docRef.id;
+    bool connected = await isConnected();
+    var clientBox = Hive.box<User>('clients');
 
     User newUser = User(
-    id: id,
-    name: name,
-    gender: gender,
-    membershipType: plan,
-    membershipExpiration: calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
-    registrationDate: registrationDate,
-    age: 20,
-    address: address,
-    phone: number,
-    email: email,
-    balance: double.parse(balance),
-    image_Path: imageUrl,
+      id: '',
+      name: name,
+      gender: gender,
+      membershipType: plan,
+      membershipExpiration: calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
+      registrationDate: registrationDate,
+      age: 20,
+      address: address,
+      phone: number,
+      email: email,
+      balance: double.parse(balance),
+      image_Path: 'none',
     );
 
-    // Save the user to the Hive local database
-    var clientBox = Hive.box<User>('clients');
+
+    if (connected) {
+      print('there is an internet connection');
+      String? imageUrl;
+
+      // Upload image if available
+      if (_imageFile != null) {
+        var refStorage = FirebaseStorage.instance.ref('${name}.jpg');
+        await refStorage.putFile(_imageFile!);
+        imageUrl = await refStorage.getDownloadURL();
+        print(imageUrl);
+      } else {
+        imageUrl = 'none';
+      }
+
+      // Add the user to Firestore and get the document ID
+      DocumentReference docRef = await addUser(
+        name,
+        number,
+        plan,
+        paidAmount,
+        balance,
+        registrationDate,
+        gender,
+        email,
+        birthDate,
+        address,
+        calculateExpirationDate(DateTime.parse(registrationDate), int.parse(daysLeft)),
+        imageUrl,
+      );
+
+      // Use the Firestore-generated document ID
+      String id = docRef.id;
+      newUser.id=id;
+      newUser.image_Path = imageUrl;
+
+
+      // Save the user to the Hive local database
+
+
+      // Navigate to the next page and remove the loading indicator
+
+    } else {
+      print('No internet connection');
+    }
+
     await clientBox.add(newUser);
 
-    // Navigate to the next page and remove the loading indicator
     Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '',fix: true,)),
-    (Route<dynamic> route) => false,
+      context,
+      MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '',fix: true,)),
+          (Route<dynamic> route) => false,
     );
+
     },
 
 
 
-        child: const Text('OK', style: TextStyle(color: green)),
+        child:  Text('OK', style: TextStyle(color: gren)),
           ),
           TextButton(
             onPressed: () {
@@ -375,7 +402,7 @@ void _onConfirm() {
       backgroundColor: back,
       appBar: AppBar(
         backgroundColor: back,
-        title: Text('Adding Client', style: TextStyle(color: green, fontSize: 30)),
+        title: Text('Adding Client', style: TextStyle(color: gren, fontSize: 30)),
         centerTitle: true,
       ),
       body: Center(
@@ -408,12 +435,13 @@ void _onConfirm() {
                 _buildExpandableDetails(),
                 SizedBox(height: 20.0),
                 ElevatedButton(
-                  onPressed:(){
+                  onPressed:() async{
+
 
                   _onConfirm();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: green,
+                    backgroundColor: gren,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -444,7 +472,7 @@ void _onConfirm() {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.camera_alt, color: green, size: 50),
+                    Icon(Icons.camera_alt, color: gren, size: 50),
                     SizedBox(height: 10),
                     Text('Capture', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30)),
                   ],

@@ -598,7 +598,7 @@ packages:
     source: hosted
     version: "2.0.1"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
@@ -693,6 +693,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  internet_connection_checker:
+    dependency: "direct main"
+    description:
+      name: internet_connection_checker
+      sha256: "8aeeca332a8984fa7e69018634956262cf724de9914447508762da0187bbb482"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   internet_connection_checker_plus:
     dependency: "direct main"
     description:
