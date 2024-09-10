@@ -6,16 +6,114 @@ Color cardColor = const Color(0xff2a3036);
 Color textColor = Colors.white;
 Color shadowColor = Colors.white10;
 
-class TrainerPage extends StatelessWidget {
-  final List<Trainer> trainers;
+class PlansPage extends StatefulWidget {
+  final List<Plan> plans;
 
-  TrainerPage({required this.trainers, Key? key}) : super(key: key);
+  PlansPage({required this.plans, Key? key}) : super(key: key);
+
+  @override
+  _PlansPageState createState() => _PlansPageState();
+}
+
+class _PlansPageState extends State<PlansPage> {
+  void _addOrEditPlan({Plan? plan, int? index}) {
+    final TextEditingController nameController =
+    TextEditingController(text: plan?.name ?? '');
+    final TextEditingController durationController =
+    TextEditingController(text: plan?.duration ?? '');
+    final TextEditingController priceController =
+    TextEditingController(text: plan?.price.toString() ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(plan == null ? 'Add Plan' : 'Edit Plan'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Plan Name'),
+              ),
+              TextField(
+                controller: durationController,
+                decoration:
+                InputDecoration(labelText: 'Duration (e.g., 30 days)'),
+              ),
+              TextField(
+                controller: priceController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Price (in \$)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty &&
+                    durationController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty) {
+                  setState(() {
+                    final newPlan = Plan(
+                      name: nameController.text,
+                      duration: durationController.text,
+                      price: int.parse(priceController.text),
+                    );
+                    if (plan == null) {
+                      widget.plans.add(newPlan);
+                    } else {
+                      widget.plans[index!] = newPlan;
+                    }
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text(plan == null ? 'Add' : 'Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deletePlan(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Plan'),
+          content: Text('Are you sure you want to delete this plan?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  widget.plans.removeAt(index);
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trainers'),
+        title: Text('Plans'),
         backgroundColor: accentColor,
         elevation: 0,
         centerTitle: true,
@@ -28,7 +126,7 @@ class TrainerPage extends StatelessWidget {
           children: [
             SizedBox(height: 20),
             Text(
-              'Our Trainers',
+              'Our Plans',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -38,11 +136,11 @@ class TrainerPage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                // Add trainer button logic here
+                _addOrEditPlan();
               },
               icon: Icon(Icons.add, color: primaryColor),
               label: Text(
-                'Add Trainer',
+                'Add Plan',
                 style: TextStyle(color: primaryColor),
               ),
               style: ElevatedButton.styleFrom(
@@ -56,9 +154,14 @@ class TrainerPage extends StatelessWidget {
             SizedBox(height: 30),
             Expanded(
               child: ListView.builder(
-                itemCount: trainers.length,
+                itemCount: widget.plans.length,
                 itemBuilder: (context, index) {
-                  return _buildTrainerCard(trainers[index]);
+                  return GestureDetector(
+                    onLongPress: () {
+                      _deletePlan(index);
+                    },
+                    child: _buildPlanCard(widget.plans[index], index),
+                  );
                 },
               ),
             ),
@@ -68,7 +171,7 @@ class TrainerPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTrainerCard(Trainer trainer) {
+  Widget _buildPlanCard(Plan plan, int index) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(20),
@@ -89,7 +192,7 @@ class TrainerPage extends StatelessWidget {
             radius: 25,
             backgroundColor: accentColor,
             child: Text(
-              trainer.name[0],
+              plan.name[0],
               style: TextStyle(
                 color: primaryColor,
                 fontSize: 24,
@@ -102,7 +205,7 @@ class TrainerPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                trainer.name,
+                plan.name,
                 style: TextStyle(
                   fontSize: 18,
                   color: textColor,
@@ -111,7 +214,15 @@ class TrainerPage extends StatelessWidget {
               ),
               SizedBox(height: 5),
               Text(
-                trainer.specialty,
+                plan.duration,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[400],
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                'Price: \$${plan.price}',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[400],
@@ -123,7 +234,7 @@ class TrainerPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.edit, color: accentColor),
             onPressed: () {
-              // Edit trainer logic here
+              _addOrEditPlan(plan: plan, index: index);
             },
           ),
         ],
@@ -132,12 +243,14 @@ class TrainerPage extends StatelessWidget {
   }
 }
 
-class Trainer {
+class Plan {
   final String name;
-  final String specialty;
+  final String duration;
+  final int price;
 
-  Trainer({
+  Plan({
     required this.name,
-    required this.specialty,
+    required this.duration,
+    required this.price,
   });
 }

@@ -44,6 +44,7 @@ class User extends HiveObject {
   @HiveField(12)
   int operation;
 
+
   User({
     required this.id,
     required this.name,

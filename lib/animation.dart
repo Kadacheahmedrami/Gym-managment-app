@@ -81,36 +81,49 @@ class _DraweranimationState extends State<Draweranimation>
             end: Alignment.bottomRight,
           ),
         ),
-        child: Stack(
-          children: [
-            Positioned(child: CustomDrawer(email: widget.email,password: widget.password,fix: widget.fix,)),
-            Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()..setEntry(3,2,0.001)..rotateY(_rotateanimation.value- 30* _rotateanimation.value * pi / 180),
-              child:  Transform.translate(
-              offset: Offset(_numAnimation.value, 0),
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(_curveanimation.value)),
-                  child: Navigation(fix: widget.fix,),
+        child: GestureDetector(
+          onPanUpdate: (details) {
+            // Detect a left swipe
+            if (details.delta.dx < -10 && pressed) {
+
+                   _toggleDrawer();
+
+            }
+            if(details.delta.dx > 10 && !pressed){
+              _toggleDrawer();
+            }
+          },
+          child: Stack(
+            children: [
+              Positioned(child: CustomDrawer(email: widget.email,password: widget.password,fix: widget.fix,)),
+              Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()..setEntry(3,2,0.001)..rotateY(_rotateanimation.value- 30* _rotateanimation.value * pi / 180),
+                child:  Transform.translate(
+                offset: Offset(_numAnimation.value, 0),
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(_curveanimation.value)),
+                    child: Navigation(fix: widget.fix,),
+                  ),
+                ),
+              ) ,
+                ),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: shadow,
+                  shape: BoxShape.circle,
+                ),
+                margin: EdgeInsets.only( top: 41,left: _leftAnimation.value),
+                child: IconButton(
+                  onPressed: _toggleDrawer,
+                  icon: Icon(!pressed ? Icons.menu : Icons.cancel  , color: Colors.white, size: 24),
                 ),
               ),
-            ) ,
-              ),
-          
-            Container(
-              decoration: BoxDecoration(
-                color: shadow,
-                shape: BoxShape.circle,
-              ),
-              margin: EdgeInsets.only( top: 41,left: _leftAnimation.value),
-              child: IconButton(
-                onPressed: _toggleDrawer,
-                icon: Icon(!pressed ? Icons.menu : Icons.cancel  , color: Colors.white, size: 24),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

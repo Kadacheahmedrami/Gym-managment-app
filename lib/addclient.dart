@@ -59,11 +59,6 @@ Future<DocumentReference> addUser(
 }
 
 
-List plans = [
-  {'name': '1 month', 'days': 30, 'price': 1800},
-  {'name': '3 months', 'days': 90, 'price': 5000},
-  {'name': '6 months', 'days': 180, 'price': 9000},
-];
 class MembershipFormPage extends StatefulWidget {
 
 
@@ -329,6 +324,7 @@ void _onConfirm() {
       newUser.image_Path = imageUrl;
 
 
+
       // Save the user to the Hive local database
 
 
@@ -407,6 +403,7 @@ void _onConfirm() {
       backgroundColor: back,
       appBar: AppBar(
         backgroundColor: back,
+        foregroundColor: Colors.white,
         title: Text('Adding Client', style: TextStyle(color: gren, fontSize: 30)),
         centerTitle: true,
       ),

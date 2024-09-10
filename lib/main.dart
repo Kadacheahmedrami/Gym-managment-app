@@ -23,7 +23,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'local.dart';
 
 
-
+List plans = [
+  {'name': '1 month', 'days': 30, 'price': 1800},
+  {'name': '3 months', 'days': 90, 'price': 5000},
+  {'name': '6 months', 'days': 180, 'price': 9000},
+];
 
 Color gren = const Color(0xffEDFE10);
 Color back = const Color(0xff1c2126);
@@ -428,7 +432,14 @@ List<Client> clients = [];
       List <Widget> pages = [
        MainPage(clients: clients), // Replace with your page widgets
        StatisticsPage(clients: clients),
-   
+        PlansPage(
+          plans: [
+            Plan(name: 'Basic Plan', duration: '30 days', price: 1800),
+            Plan(name: 'Premium Plan', duration: '90 days', price: 5000),
+            Plan(name: 'Ultimate Plan', duration: '365 days', price: 9000),
+          ],
+        ),
+
        Stack(
           alignment: Alignment.center,
           children: [
@@ -467,14 +478,11 @@ List<Client> clients = [];
             ),
           ],
         ),
-      
-     TrainerPage(  trainers: [
-        Trainer(name: 'John Doe', specialty: 'Strength Training'),
-        Trainer(name: 'Jane Smith', specialty: 'Yoga'),
-        Trainer(name: 'Michael Johnson', specialty: 'Cardio'),
-      ])
-  
-    ];
+
+
+
+
+      ];
 
 
 
@@ -585,7 +593,7 @@ List<Client> clients = [];
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-            Icon(Icons.logo_dev_outlined,  color:_currentIndex!=2 ? Colors.white : gren,size: 36,),Text('Credit',style: TextStyle( color:_currentIndex!=2 ? Colors.white : gren))
+            Icon(Icons.card_membership,  color:_currentIndex!=2 ? Colors.white : gren,size: 36,),Text('Plans',style: TextStyle( color:_currentIndex!=2 ? Colors.white : gren))
             ],
           ),
            
@@ -602,7 +610,7 @@ List<Client> clients = [];
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-            Icon(Icons.sports_gymnastics_rounded, color:_currentIndex!=3 ? Colors.white : gren,size: 36,),Text('Trainers',style: TextStyle( color:_currentIndex!=3 ? Colors.white : gren))
+            Icon(Icons.logo_dev_outlined, color:_currentIndex!=3 ? Colors.white : gren,size: 36,),Text('Credit',style: TextStyle( color:_currentIndex!=3 ? Colors.white : gren))
             ],
           ),
           

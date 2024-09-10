@@ -103,11 +103,6 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _emailController;
   late TextEditingController _balanceController;
 
-  List plans = [
-    {'name': '1 month', 'days': 30, 'price': 1800},
-    {'name': '3 months', 'days': 90, 'price': 5000},
-    {'name': '6 months', 'days': 180, 'price': 9000},
-  ];
 
   @override
   void initState() {
