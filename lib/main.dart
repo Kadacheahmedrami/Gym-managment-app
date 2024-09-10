@@ -149,6 +149,67 @@ List<Client> clients = [];
      bool connectionChanged = false;
     bool usedOnce = true;
 
+    void refresher() async {
+      var clientBox = Hive.box<User>('clients');
+      List<User> users = clientBox.values.toList();
+
+      for (var usr in users) {
+        if (usr.operation == 1) {
+          DocumentReference docRef = await addUser(
+            usr.name,
+            usr.phone,
+            usr.membershipType,
+            'not yet', // fix this
+            usr.balance.toString(),
+            usr.registrationDate,
+            usr.gender,
+            usr.email,
+            '',
+            usr.address,
+            usr.membershipExpiration,
+            usr.image_Path,
+          );
+
+          // Update the operation field to 0
+          usr.operation = 0;
+          usr.id= docRef.id;
+
+          // Save the updated user back to the box
+          usr.save();
+        }
+        else{
+          if(usr.operation == -1){
+            String id= usr.id;
+            await FirebaseFirestore.instance.collection('clients').doc(id).delete();
+            usr.delete();
+          }
+          if(usr.operation== 2){
+
+            Map<String, dynamic> userMap = {
+              'address': usr.address ?? "",
+              'balance': usr.balance.toString(),
+              'birth_date': "", // Add birth_date from usr if available
+              'email': usr.email ?? "",
+              'exp_date': usr.membershipExpiration ?? "",
+              'gender': usr.gender ?? "",
+              'image_path': usr.image_Path ?? "none",
+              'name': usr.name ?? "",
+              'number': usr.phone ?? "",
+              'paidAmount': "not yet", // Adjust according to your logic
+              'plan': usr.membershipType ?? "1 month",
+              'reg_date': usr.registrationDate ?? "",
+            };
+
+            // Update the user document in Firestore
+            await FirebaseFirestore.instance.collection('clients').doc(usr.id).set(userMap);
+            usr.operation= 0;
+            usr.save();
+          }
+        }
+      }
+    }
+
+
     void initState() {
       super.initState();
 
@@ -159,10 +220,11 @@ List<Client> clients = [];
             switch (event) {
               case InternetStatus.connected:
                 setState(() {
+                  refresher();
                   print('case 1');
                   isConnectedToInternet = true;
                   connectionChanged=true;
-                  if(usedOnce)
+                  if(usedOnce && widget.fix == false )
                     {
                       usedOnce= false;
                       loadData();
@@ -176,7 +238,7 @@ List<Client> clients = [];
                   print('case 2');
                   isConnectedToInternet = false;
                   connectionChanged=true;
-                  if(usedOnce)
+                  if(usedOnce && widget.fix == false )
                   {
                     usedOnce= false;
                     loadData();
@@ -189,7 +251,7 @@ List<Client> clients = [];
                   print('case 3');
                   isConnectedToInternet = false;
                   connectionChanged=true;
-                  if(usedOnce)
+                  if(usedOnce && widget.fix == false )
                   {
                     usedOnce= false;
                     loadData();
@@ -214,7 +276,70 @@ List<Client> clients = [];
       super.dispose();
     }
 
+    void OnlineBase(clientBox){
+      FirebaseFirestore.instance
+          .collection('clients')
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        int birthDate;
 
+        // Clear the local storage before syncing new data
+
+        await clientBox.clear();
+
+        querySnapshot.docs.forEach((doc) {
+          if (doc['birth_date'] == '') {
+            birthDate = DateTime.now().year;
+          } else {
+            birthDate = DateTime.parse(doc['birth_date']).year;
+          }
+
+          Client client = Client(
+            id: doc.id,
+            name: doc['name'],
+            gender: doc['gender'],
+            balance: double.parse(doc['balance']),
+            membershipType: doc['plan'],
+            address: doc['address'],
+            age: DateTime.now().year - birthDate,
+            email: doc['email'],
+            phone: doc['number'],
+            membershipExpiration: DateTime.parse(doc['exp_date']),
+            registrationDate: DateTime.parse(doc['reg_date']),
+            image_Path: doc['image_path'],
+          );
+
+
+          clientBox.put(doc.id, User(
+              id: doc.id,
+              name: doc['name'],
+              gender: doc['gender'],
+              membershipType: doc['plan'],
+              membershipExpiration: doc['exp_date'],
+              registrationDate: doc['reg_date'],
+              age: DateTime.now().year - birthDate,
+              address: doc['address'],
+              phone: doc['number'],
+              email: doc['email'],
+              balance: double.parse(doc['balance']),
+              image_Path: doc['image_path'],
+              operation: 0
+          ));
+
+
+          setState(() {
+            clients.add(client);
+          });
+
+
+        });
+
+
+
+
+
+      });
+    }
     Future<void> loadData() async {
 
       print('stats   =============  $isConnectedToInternet');
@@ -225,67 +350,7 @@ List<Client> clients = [];
           {
             // Load from Firestore
             print("hive box is empty");
-            FirebaseFirestore.instance
-                .collection('clients')
-                .get()
-                .then((QuerySnapshot querySnapshot) async {
-              int birthDate;
-
-              // Clear the local storage before syncing new data
-
-              await clientBox.clear();
-
-              querySnapshot.docs.forEach((doc) {
-                if (doc['birth_date'] == '') {
-                  birthDate = DateTime.now().year;
-                } else {
-                  birthDate = DateTime.parse(doc['birth_date']).year;
-                }
-
-                Client client = Client(
-                  id: doc.id,
-                  name: doc['name'],
-                  gender: doc['gender'],
-                  balance: double.parse(doc['balance']),
-                  membershipType: doc['plan'],
-                  address: doc['address'],
-                  age: DateTime.now().year - birthDate,
-                  email: doc['email'],
-                  phone: doc['number'],
-                  membershipExpiration: DateTime.parse(doc['exp_date']),
-                  registrationDate: DateTime.parse(doc['reg_date']),
-                  image_Path: doc['image_path'],
-                );
-
-
-                clientBox.put(doc.id, User(
-                  id: doc.id,
-                  name: doc['name'],
-                  gender: doc['gender'],
-                  membershipType: doc['plan'],
-                  membershipExpiration: doc['exp_date'],
-                  registrationDate: doc['reg_date'],
-                  age: DateTime.now().year - birthDate,
-                  address: doc['address'],
-                  phone: doc['number'],
-                  email: doc['email'],
-                  balance: double.parse(doc['balance']),
-                  image_Path: doc['image_path'],
-                ));
-
-
-                setState(() {
-                  clients.add(client);
-                });
-
-
-              });
-
-
-
-
-
-            });
+          OnlineBase(clientBox);
           }
             else
               {
@@ -295,21 +360,25 @@ List<Client> clients = [];
                   List<User> users=[];
                   users = clientBox.values.toList();
                   for (var usr in users){
-                    Client client = Client(
-                      id: usr.id,
-                      name: usr.name,
-                      gender: usr.gender,
-                      membershipType: usr.membershipType,
-                      membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
-                      registrationDate:DateTime.parse(usr.registrationDate) ,
-                      age: usr.age,
-                      address: usr.address,
-                      phone: usr.phone,
-                      email: usr.email,
-                      balance: usr.balance,
-                      image_Path: usr.image_Path == '' ? 'none' : usr.image_Path!,
-                    );
-                    clients.add(client);
+                    print("${usr.name} has an operation of type ${usr.operation}");
+                    if(usr.operation != -1){
+                      Client client = Client(
+                        id: usr.id,
+                        name: usr.name,
+                        gender: usr.gender,
+                        membershipType: usr.membershipType,
+                        membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
+                        registrationDate:DateTime.parse(usr.registrationDate) ,
+                        age: usr.age,
+                        address: usr.address,
+                        phone: usr.phone,
+                        email: usr.email,
+                        balance: usr.balance,
+                        image_Path: usr.image_Path == '' ? 'none' : usr.image_Path!,
+                      );
+                      clients.add(client);
+                    }
+
                   }
                 });
               }
@@ -322,21 +391,26 @@ List<Client> clients = [];
           List<User> users=[];
           users = clientBox.values.toList();
           for (var usr in users){
-            Client client = Client(
-              id: usr.id,
-              name: usr.name,
-              gender: usr.gender,
-              membershipType: usr.membershipType,
-              membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
-              registrationDate:DateTime.parse(usr.registrationDate) ,
-              age: usr.age,
-              address: usr.address,
-              phone: usr.phone,
-              email: usr.email,
-              balance: usr.balance,
-              image_Path: usr.image_Path!,
-            );
-            clients.add(client);
+            print("${usr.name} has an operation of type ${usr.operation}");
+            if(usr.operation != -1) {
+              Client client = Client(
+                id: usr.id,
+                name: usr.name,
+                gender: usr.gender,
+                membershipType: usr.membershipType,
+                membershipExpiration:DateTime.parse(usr.membershipExpiration) ,
+                registrationDate:DateTime.parse(usr.registrationDate) ,
+                age: usr.age,
+                address: usr.address,
+                phone: usr.phone,
+                email: usr.email,
+                balance: usr.balance,
+                image_Path: usr.image_Path == 'none' ? 'none' : usr.image_Path!,
+              );
+              clients.add(client);
+            }
+
+
           }
         });
 
@@ -425,13 +499,39 @@ List<Client> clients = [];
       clients:clients
     ),
   ),
-);
+  );
 
             },
           ),
         ],
       ),
-      body: pages.elementAt(_currentIndex),
+      body:RefreshIndicator(child: pages.elementAt(_currentIndex) , onRefresh: () async {
+
+        bool connected = await isConnected();
+
+        if(connected)
+          {
+            var clientBox = Hive.box<User>('clients');
+            refresher();
+            OnlineBase(clientBox);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Draweranimation(
+                  email: '',
+                  password: '',
+                  fix: true,
+                ),
+              ),
+            );
+
+          }
+        else{
+        print(  "no connection to refresh");
+        }
+
+
+      }),
   backgroundColor: back,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(

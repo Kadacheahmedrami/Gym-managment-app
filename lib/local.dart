@@ -41,6 +41,9 @@ class User extends HiveObject {
   @HiveField(11)
   String? image_Path;
 
+  @HiveField(12)
+  int operation;
+
   User({
     required this.id,
     required this.name,
@@ -53,32 +56,8 @@ class User extends HiveObject {
     required this.phone,
     required this.email,
     required this.balance,
+    required this.operation,
     this.image_Path,
-  });
-}
 
-@HiveType(typeId: 1)
-class Demand extends HiveObject {
-  @HiveField(0)
-  final String type; // 'add', 'delete', 'edit'
-
-  @HiveField(1)
-  final String userId; // For DeleteDemand and EditDemand
-
-  @HiveField(2)
-  final User? user; // For AddDemand
-
-  @HiveField(3)
-  final String? editedFeature; // For EditDemand
-
-  @HiveField(4)
-  final dynamic newValue; // For EditDemand
-
-  Demand({
-    required this.type,
-    this.userId = '',
-    this.user,
-    this.editedFeature,
-    this.newValue,
   });
 }

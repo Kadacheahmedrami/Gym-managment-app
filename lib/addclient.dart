@@ -25,6 +25,40 @@ Future<bool> isConnected() async {
 }
 
 
+Future<DocumentReference> addUser(
+    String name,
+    String number,
+    String plan,
+    String paidAmount,
+    String balance,
+    String registrationDate,
+    String gender,
+    String email,
+    String birthDate,
+    String address,
+    String membershipExpiration,
+    String? imageUrl,
+    ) async {
+  // Add a new document with a generated ID
+  DocumentReference docRef = await FirebaseFirestore.instance.collection('clients').add({
+    'name': name,
+    'number': number,
+    'plan': plan,
+    'paidAmount': paidAmount,
+    'balance': balance,
+    'reg_date': registrationDate,
+    'gender': gender,
+    'email': email,
+    'birth_date': birthDate,
+
+    'address': address,
+    'exp_date': membershipExpiration,
+    'image_path': imageUrl,
+  });
+  return docRef;
+}
+
+
 List plans = [
   {'name': '1 month', 'days': 30, 'price': 1800},
   {'name': '3 months', 'days': 90, 'price': 5000},
@@ -75,38 +109,7 @@ class _MembershipFormPageState extends State<MembershipFormPage> {
 
 CollectionReference clients = FirebaseFirestore.instance.collection('clients');
 
-  Future<DocumentReference> addUser(
-      String name,
-      String number,
-      String plan,
-      String paidAmount,
-      String balance,
-      String registrationDate,
-      String gender,
-      String email,
-      String birthDate,
-      String address,
-      String membershipExpiration,
-      String? imageUrl,
-      ) async {
-    // Add a new document with a generated ID
-    DocumentReference docRef = await FirebaseFirestore.instance.collection('clients').add({
-      'name': name,
-      'number': number,
-      'plan': plan,
-      'paidAmount': paidAmount,
-      'balance': balance,
-      'reg_date': registrationDate,
-      'gender': gender,
-      'email': email,
-      'birth_date': birthDate,
 
-      'address': address,
-      'exp_date': membershipExpiration,
-      'image_path': imageUrl,
-    });
-    return docRef;
-  }
 
 String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
   DateTime expirationDate = registrationDate.add(Duration(days: daysLeft));
@@ -286,6 +289,7 @@ void _onConfirm() {
       email: email,
       balance: double.parse(balance),
       image_Path: 'none',
+      operation: 0
     );
 
 
@@ -331,6 +335,7 @@ void _onConfirm() {
       // Navigate to the next page and remove the loading indicator
 
     } else {
+      newUser.operation=1;
       print('No internet connection');
     }
 

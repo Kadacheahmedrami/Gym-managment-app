@@ -8,6 +8,7 @@ import 'package:hamza_gym/main.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
+import 'addclient.dart';
 import 'local.dart';
 
 
@@ -63,6 +64,9 @@ Future<void> updateUser(String userId, String? title, dynamic value) async {
         break;
       case 'balance':
         userToUpdate.balance = value;
+        break;
+      case 'operation':
+        userToUpdate.operation = value;
         break;
       default:
       // Handle unknown titles if necessary
@@ -212,13 +216,28 @@ class _ProfilePageState extends State<ProfilePage> {
           TextButton(
             onPressed: () async {
               onSave(controller.text);
+              bool connected = await isConnected();
 
+
+              if(widget.client.id != '' && connected)
+                {
+
+                      await FirebaseFirestore.instance
+                          .collection('clients')
+                          .doc(widget.client.id)
+                          .update({title: controller.text});
+
+                }
+              else{
+                if(widget.client.id == ''){
+
+                }
+                else{
+
+                  await updateUser(widget.client.id, 'operation', 2);
+                }
+              }
               await updateUser(widget.client.id, title, controller.text);
-
-              await FirebaseFirestore.instance
-                  .collection('clients')
-                  .doc(widget.client.id)
-                  .update({title: controller.text});
 
               Navigator.pushAndRemoveUntil(
                 context,
@@ -354,15 +373,29 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).delete();
-                if(widget.client.image_Path != 'none')
-                {
-                           Reference storageRef = FirebaseStorage.instance.ref().child('${widget.client.name}.jpg');
+                bool connected = await isConnected();
+                if(widget.client.id != '' && connected)
+                  {
+                    await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).delete();
+                    if(widget.client.image_Path != 'none')
+                    {
+                      Reference storageRef = FirebaseStorage.instance.ref().child('${widget.client.name}.jpg');
 
-    // Delete the file
-    await storageRef.delete();
+                      // Delete the file
+                      await storageRef.delete();
+                    }
+                    deleteUserById(widget.client.id);
+                  }
+                else{
+                  if(widget.client.id ==''){
+                    deleteUserById(widget.client.id);
+                  }
+                  else{
+                  await updateUser(widget.client.id, 'operation', -1);
+                  }
                 }
-                deleteUserById(widget.client.id);
+
+
               Navigator.pushAndRemoveUntil(
     context,
     MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
