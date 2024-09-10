@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
 
 import 'package:hamza_gym/main.dart';
+import 'package:hamza_gym/trainers.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
@@ -85,8 +86,8 @@ Future<void> updateUser(String userId, String? title, dynamic value) async {
 
 class ProfilePage extends StatefulWidget {
   final Client client;
-
-  ProfilePage({required this.client});
+  final List<Plan> plans;
+  ProfilePage({required this.client,required this.plans});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -103,9 +104,14 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _emailController;
   late TextEditingController _balanceController;
 
+  List<Plan> plans =[];
 
   @override
   void initState() {
+    plans.addAll(widget.plans);
+    for(Plan pp in plans){
+      print(pp.name);
+    }
     super.initState();
     _nameController = TextEditingController(text: widget.client.name);
     _genderController = TextEditingController(text: widget.client.gender);
@@ -165,8 +171,9 @@ class _ProfilePageState extends State<ProfilePage> {
       value: controller.text,
       items: plans.map((plan) {
         return DropdownMenuItem<String>(
-          value: plan['name'],
-          child: Text('${plan['name']} - \$${plan['price']}'),
+          value: plan.name,
+          child: Text('${plan.name} - \$${plan.price}'),
+
         );
       }).toList(),
       onChanged: (String? newValue) {
@@ -259,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showRenewMembershipDialog() {
     int selectedPlanIndex = 0; // Default to the first plan
-    double updatedBalance = widget.client.balance + plans[selectedPlanIndex]['price'];
+    double updatedBalance = widget.client.balance + plans[selectedPlanIndex].price;
     TextEditingController _paidAmountController = TextEditingController();
 
     showDialog(
@@ -275,13 +282,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   Column(
                     children: List<Widget>.generate(plans.length, (int index) {
                       return RadioListTile<int>(
-                        title: Text('${plans[index]['name']} - \$${plans[index]['price']}'),
+                        title: Text('${plans[index].name} - \$${plans[index].price}'),
                         value: index,
                         groupValue: selectedPlanIndex,
                         onChanged: (int? value) {
                           setState(() {
                             selectedPlanIndex = value!;
-                            updatedBalance = widget.client.balance + plans[selectedPlanIndex]['price'];
+                            updatedBalance = widget.client.balance + plans[selectedPlanIndex].price;
                           });
                         },
                       );
@@ -294,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     onChanged: (value) {
                       final paidAmount = double.tryParse(value) ?? 0.0;
                       setState(() {
-                        updatedBalance = widget.client.balance + plans[selectedPlanIndex]['price'] - paidAmount;
+                        updatedBalance = widget.client.balance + plans[selectedPlanIndex].price - paidAmount;
                       });
                     },
                   ),
@@ -312,13 +319,13 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async{
                 final paidAmount = double.tryParse(_paidAmountController.text) ?? 0.0;
 
-  DateTime expirationDate = widget.client.membershipExpiration.add(Duration(days: plans[selectedPlanIndex]['days']));
-  
+  DateTime expirationDate = widget.client.membershipExpiration.add(Duration(days:int.parse(plans[selectedPlanIndex].duration) ));
+
   // Format the expiration date to "YYYY-MM-DD"
   print(widget.client.membershipExpiration);
    print(expirationDate.toIso8601String().substring(0, 10));
    print(updatedBalance.toString());
-   print( plans[selectedPlanIndex]['name']);
+   print( plans[selectedPlanIndex].name);
 
                 var userBox = Hive.box<User>('clients');
 
@@ -329,13 +336,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
 
                 userToUpdate.balance = updatedBalance;
-                userToUpdate.membershipType = plans[selectedPlanIndex]['name'] ;
+                userToUpdate.membershipType = plans[selectedPlanIndex].name ;
                 userToUpdate.membershipExpiration =  expirationDate.toIso8601String().substring(0, 10);
 
-                await userToUpdate.save();
 
-                await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).update({'balance':updatedBalance.toString() , 'plan' : plans[selectedPlanIndex]['name'],'exp_date':expirationDate.toIso8601String().substring(0, 10)});
-                
+                bool connected = await isConnected();
+                if(widget.client.id != '' && connected)
+                {
+                  await userToUpdate.save();
+                  await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).update({
+                    'balance':updatedBalance.toString() ,
+                    'plan' : widget.plans[selectedPlanIndex].name,
+                    'exp_date':expirationDate.toIso8601String().substring(0, 10)}
+                  );
+                }
+                else{
+
+                    userToUpdate.operation=2;
+                    await userToUpdate.save();
+
+
+                }
+
+
                        Navigator.pushAndRemoveUntil(
     context,
     MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
@@ -359,7 +382,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _deleteClient() {
       print(widget.client.id);
     showDialog(
-      
+
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -502,7 +525,7 @@ Container(
               _buildDetailCard('exp_date', _expirationDateController, (value) {
                 // Handle expiration date change
               }),
-           
+
               _buildDetailCard('address', _addressController, (value) {
                 // Handle address change
               }),

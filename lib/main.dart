@@ -23,11 +23,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'local.dart';
 
 
-List plans = [
-  {'name': '1 month', 'days': 30, 'price': 1800},
-  {'name': '3 months', 'days': 90, 'price': 5000},
-  {'name': '6 months', 'days': 180, 'price': 9000},
-];
+
 
 Color gren = const Color(0xffEDFE10);
 Color back = const Color(0xff1c2126);
@@ -72,7 +68,9 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(MembershipAdapter());
   await Hive.openBox<User>('clients');
+  await Hive.openBox<Membership>('membershipBox');
 
   runApp(MyApp());
 }
@@ -212,10 +210,49 @@ List<Client> clients = [];
         }
       }
     }
+    List<Plan> abonment=[] ;
 
+    List<Plan> recoverPlans() {
+      List<Plan> programs = [];
+
+      var membershipBox = Hive.box<Membership>('membershipBox');
+      List<Membership> memberships = membershipBox.values.toList();
+      for(Membership mm in memberships){
+        programs.add(Plan(name: mm.name, duration: mm.duration, price: mm.price));
+      }
+      return programs;
+    }
+
+    void _initializePlans()  {
+      List<Plan> localPlans = recoverPlans();
+
+      setState(() {
+        // Update your state with the recovered plans
+        for(Plan pp in localPlans){
+          abonment.add(pp);
+          print(pp.name);
+        }
+      });
+
+
+    }
 
     void initState() {
       super.initState();
+
+
+
+
+setState(() {
+  _initializePlans();
+
+});
+
+
+
+
+
+
 
       _internetConnectionStreamSubscription =
           InternetConnection().onStatusChange.listen((event) {
@@ -430,14 +467,10 @@ List<Client> clients = [];
 
 
       List <Widget> pages = [
-       MainPage(clients: clients), // Replace with your page widgets
+       MainPage(clients: clients, plans: abonment,), // Replace with your page widgets
        StatisticsPage(clients: clients),
         PlansPage(
-          plans: [
-            Plan(name: 'Basic Plan', duration: '30 days', price: 1800),
-            Plan(name: 'Premium Plan', duration: '90 days', price: 5000),
-            Plan(name: 'Ultimate Plan', duration: '365 days', price: 9000),
-          ],
+        plans: abonment,
         ),
 
        Stack(
@@ -496,6 +529,8 @@ List<Client> clients = [];
         foregroundColor: Colors.white ,
         title: const Text('Gym Management App'),
         actions: [
+
+
           IconButton(
          
             icon: const Icon(Icons.notifications),
@@ -504,7 +539,8 @@ List<Client> clients = [];
   context,
   MaterialPageRoute(
     builder: (context) => NotificationPage(
-      clients:clients
+      clients:clients,
+      plans: abonment,
     ),
   ),
   );
@@ -628,7 +664,7 @@ List<Client> clients = [];
         width: 65,
         child:     FloatingActionButton(
             onPressed: () {
-             Navigator.push(context , MaterialPageRoute(builder: (context){return MembershipFormPage();}));
+             Navigator.push(context , MaterialPageRoute(builder: (context){return MembershipFormPage(plans: abonment,);}));
             }, // Adjust icon size as needed
             backgroundColor: gren,
             elevation: 0, // shadow for better visibility

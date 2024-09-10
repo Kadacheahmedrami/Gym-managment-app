@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/ClientCard.dart';
-import 'package:hamza_gym/main.dart'; // Ensure ClientCard is correctly implemented
-// Ensure Client class is correctly implemented
+import 'package:hamza_gym/main.dart';
+import 'package:hamza_gym/trainers.dart'; // Ensure ClientCard is correctly implemented
 
 Color gren = const Color(0xffEDFE10);
 Color back = const Color(0xff1c2126);
 Color shadow = const Color(0xff2a3036);
-
-
 
 int daysLeftUntil(String targetDate) {
   DateTime target = DateTime.parse(targetDate);
@@ -15,13 +13,11 @@ int daysLeftUntil(String targetDate) {
   return target.difference(now).inDays;
 }
 
-
-
 class MainPage extends StatefulWidget {
+  final List<Client> clients;
+  final List<Plan> plans;
 
-   final List<Client> clients;
-
-   MainPage({required this.clients, Key? key});
+  MainPage({required this.clients,required this.plans, Key? key});
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -32,15 +28,31 @@ class _MainPageState extends State<MainPage> {
   String selectedGender = "All";
   String selectedMembershipType = "All";
   String selectedSortOption = "None";
-  String selectedBalanceFilter = "All"; // Add this line
-
- 
+  String selectedBalanceFilter = "All";
 
   List<Client>? filteredClients;
+  List<String> arr = ['All'];
+
+  List<Plan> plans =[Plan(name: "1 month",duration: "30",price : 1800)];
 
   @override
-  void initState() {
+  void initState()
+
+  {
     super.initState();
+    // Populate arr with plan names
+    // Ensure "All" is added only once and the list has unique it_iniems
+    arr = ['All'];
+    plans.addAll(widget.plans);
+    // Populate arr with plan names, avoiding duplicates
+    for (Plan p in plans) {
+      if (!arr.contains(p.name)) {
+        setState(() {
+          arr.add(p.name);
+        });
+      }
+    }
+
     filteredClients = widget.clients;
     _searchController.addListener(_filterClients);
   }
@@ -109,8 +121,9 @@ class _MainPageState extends State<MainPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Gender Filter
                       Container(
-                        padding: const EdgeInsets.only(left :10),
+                        padding: const EdgeInsets.only(left: 10),
                         margin: const EdgeInsets.only(top: 20),
                         height: 40,
                         decoration: const BoxDecoration(
@@ -133,8 +146,9 @@ class _MainPageState extends State<MainPage> {
                           },
                         ),
                       ),
+                      // Membership Filter
                       Container(
-                        padding: const EdgeInsets.only(left :10),
+                        padding: const EdgeInsets.only(left: 10),
                         margin: const EdgeInsets.only(top: 20, right: 20, left: 20),
                         height: 40,
                         decoration: const BoxDecoration(
@@ -143,7 +157,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                         child: DropdownButton<String>(
                           value: selectedMembershipType,
-                          items: ["All", "1 month", "3 months", "6 months"].map((String value) {
+                          items: arr.map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -157,8 +171,9 @@ class _MainPageState extends State<MainPage> {
                           },
                         ),
                       ),
+                      // Sort Option Filter
                       Container(
-                        padding: const EdgeInsets.only(left :10),
+                        padding: const EdgeInsets.only(left: 10),
                         margin: const EdgeInsets.only(top: 20),
                         height: 40,
                         decoration: const BoxDecoration(
@@ -181,8 +196,9 @@ class _MainPageState extends State<MainPage> {
                           },
                         ),
                       ),
+                      // Balance Filter
                       Container(
-                        padding: const EdgeInsets.only(left :10),
+                        padding: const EdgeInsets.only(left: 10),
                         margin: const EdgeInsets.only(top: 20, left: 20),
                         height: 40,
                         decoration: const BoxDecoration(
@@ -215,7 +231,7 @@ class _MainPageState extends State<MainPage> {
             child: ListView.builder(
               itemCount: filteredClients!.length,
               itemBuilder: (context, index) {
-                return ClientCard(filteredClients![index]);
+                return ClientCard(filteredClients![index],plans);
               },
             ),
           ),

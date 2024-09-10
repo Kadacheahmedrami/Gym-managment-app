@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hamza_gym/Client.dart';
 
 import 'package:hamza_gym/main.dart';
+import 'package:hamza_gym/trainers.dart';
 import 'package:intl/intl.dart';
 
 
@@ -11,8 +12,8 @@ Color shadow = const Color(0xff2a3036);
 
 class NotificationPage extends StatelessWidget {
   final List<Client> clients;
-
-  NotificationPage({required this.clients});
+  final List<Plan> plans;
+  NotificationPage({required this.clients,required this.plans});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class NotificationPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProfilePage(client: client),
+                    builder: (context) => ProfilePage(client: client,plans: plans,),
                   ),
                 );
               },

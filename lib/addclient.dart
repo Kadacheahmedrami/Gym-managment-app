@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/animation.dart';
+import 'package:hamza_gym/trainers.dart';
 import 'package:hive/hive.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -61,8 +62,8 @@ Future<DocumentReference> addUser(
 
 class MembershipFormPage extends StatefulWidget {
 
-
-  const MembershipFormPage({Key? key}) : super(key: key);
+final List<Plan> plans;
+MembershipFormPage({required this.plans,Key? key}) : super(key: key);
 
   @override
   _MembershipFormPageState createState() => _MembershipFormPageState();
@@ -113,7 +114,16 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
   return '${expirationDate.toIso8601String().substring(0, 10)}';
 }
 
+
+
   @override
+  List<Plan> plans =[Plan(name: "1 month",duration: "30",price : 1800)];
+  void initState() {
+    plans.addAll(widget.plans);
+    super.initState();
+
+  }
+
   void dispose() {
     _nameController.dispose();
     _numberController.dispose();
@@ -372,7 +382,7 @@ void _onConfirm() {
     if (_registrationDateController.text.isNotEmpty) {
       DateTime registrationDate = DateTime.parse(_registrationDateController.text);
       DateTime expirationDate = registrationDate.add(Duration(days: _selectedPlanDays));
-      int daysLeft = expirationDate.difference(DateTime.now()).inDays;
+      int daysLeft = expirationDate.difference(DateTime.now()).inDays+1;
       _daysLeftController.text = daysLeft.toString();
     }
   }
@@ -420,7 +430,7 @@ void _onConfirm() {
                 SizedBox(height: 16.0),
                 _buildTextField(_numberController, 'Number', TextInputType.number),
                 SizedBox(height: 16.0),
-                _buildDropdownField(),
+                _buildDropdownField(plans),
                 SizedBox(height: 16.0),
                 _buildTextField(_amountController, 'Paid Amount', TextInputType.number, (value) {
                   _calculateBalance();
@@ -519,7 +529,7 @@ void _onConfirm() {
     );
   }
 
-  Widget _buildDropdownField() {
+  Widget _buildDropdownField(List<Plan> plans) {
     return Container(
          margin: EdgeInsets.symmetric(vertical: 2),
       height: 56,
@@ -536,16 +546,16 @@ void _onConfirm() {
           isExpanded: true,
           items: plans.map<DropdownMenuItem<String>>((plan) {
             return DropdownMenuItem<String>(
-              value: plan['name'],
-              child: Text(plan['name'], style: TextStyle(color: back)),
+              value: plan.name,
+              child: Text(plan.name, style: TextStyle(color: back)),
             );
           }).toList(),
           onChanged: (String? newValue) {
             setState(() {
               _planController.text = newValue!;
-              final selectedPlan = plans.firstWhere((plan) => plan['name'] == newValue);
-              _selectedPlanPrice = selectedPlan['price'];
-              _selectedPlanDays = selectedPlan['days'];
+              final selectedPlan = plans.firstWhere((plan) => plan.name == newValue);
+              _selectedPlanPrice = selectedPlan.price;
+              _selectedPlanDays =int.parse(selectedPlan.duration) ;
               _calculateBalance();
               _calculateDaysLeft();
             });

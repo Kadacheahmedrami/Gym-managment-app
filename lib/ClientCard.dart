@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hamza_gym/Client.dart';
 import 'package:hamza_gym/addclient.dart';
 import 'package:hamza_gym/main.dart';
+import 'package:hamza_gym/trainers.dart';
 import 'package:intl/intl.dart'; // For date formatting
 
 
@@ -13,8 +14,8 @@ Color shadow = const Color(0xff2a3036);
 
 class ClientCard extends StatefulWidget {
   final Client client;
-
-  const ClientCard(this.client, {super.key});
+  final List<Plan> plans;
+  const ClientCard(this.client,this.plans, {super.key});
 
   @override
   _ClientCardState createState() => _ClientCardState();
@@ -25,6 +26,8 @@ class _ClientCardState extends State<ClientCard> {
     final today = DateTime.now();
     return expirationDate.difference(today).inDays;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,7 @@ class _ClientCardState extends State<ClientCard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfilePage(client: widget.client),
+              builder: (context) => ProfilePage(client: widget.client,plans: widget.plans,),
             ),
           );
         },
@@ -69,7 +72,7 @@ class _ClientCardState extends State<ClientCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Membership: ${widget.client.membershipType}', style: TextStyle(color: expir, fontSize: 15)),
-              Text(daysLeftUntil(widget.client.membershipExpiration) > 0 ? '${daysLeftUntil(widget.client.membershipExpiration)} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
+              Text(daysLeftUntil(widget.client.membershipExpiration) > 0 ? '${daysLeftUntil(widget.client.membershipExpiration)+1} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
             ],
           ),
           children: <Widget>[

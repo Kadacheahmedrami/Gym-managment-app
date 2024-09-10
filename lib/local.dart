@@ -62,3 +62,21 @@ class User extends HiveObject {
 
   });
 }
+
+@HiveType(typeId: 1) // Updated for the Membership class
+class Membership extends HiveObject {
+  @HiveField(0)
+  final String name;
+
+  @HiveField(1)
+  final String duration;
+
+  @HiveField(2)
+  final int price;
+
+  Membership({
+    required this.name,
+    required this.duration,
+    required this.price,
+  });
+}
