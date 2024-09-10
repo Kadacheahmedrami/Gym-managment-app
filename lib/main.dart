@@ -317,6 +317,81 @@ setState(() {
       super.dispose();
     }
 
+    void RefreshwithOnlineBase(clientBox){
+      FirebaseFirestore.instance
+          .collection('clients')
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        int birthDate;
+
+        // Clear the local storage before syncing new data
+
+        await clientBox.clear();
+
+        querySnapshot.docs.forEach((doc) {
+          if (doc['birth_date'] == '') {
+            birthDate = DateTime.now().year;
+          } else {
+            birthDate = DateTime.parse(doc['birth_date']).year;
+          }
+
+          Client client = Client(
+            id: doc.id,
+            name: doc['name'],
+            gender: doc['gender'],
+            balance: double.parse(doc['balance']),
+            membershipType: doc['plan'],
+            address: doc['address'],
+            age: DateTime.now().year - birthDate,
+            email: doc['email'],
+            phone: doc['number'],
+            membershipExpiration: DateTime.parse(doc['exp_date']),
+            registrationDate: DateTime.parse(doc['reg_date']),
+            image_Path: doc['image_path'],
+          );
+
+
+          clientBox.put(doc.id, User(
+              id: doc.id,
+              name: doc['name'],
+              gender: doc['gender'],
+              membershipType: doc['plan'],
+              membershipExpiration: doc['exp_date'],
+              registrationDate: doc['reg_date'],
+              age: DateTime.now().year - birthDate,
+              address: doc['address'],
+              phone: doc['number'],
+              email: doc['email'],
+              balance: double.parse(doc['balance']),
+              image_Path: doc['image_path'],
+              operation: 0
+          ));
+
+
+
+
+
+        });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Draweranimation(
+              email: '',
+              password: '',
+              fix: true,
+            ),
+          ),
+        );
+
+
+
+      });
+
+    }
+
+
+
     void OnlineBase(clientBox){
       FirebaseFirestore.instance
           .collection('clients')
@@ -556,18 +631,9 @@ setState(() {
         if(connected)
           {
             var clientBox = Hive.box<User>('clients');
-            refresher();
-            OnlineBase(clientBox);
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Draweranimation(
-                  email: '',
-                  password: '',
-                  fix: true,
-                ),
-              ),
-            );
+
+            RefreshwithOnlineBase(clientBox);
+
 
           }
         else{

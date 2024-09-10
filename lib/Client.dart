@@ -32,6 +32,57 @@ Future<void> deleteUserById(String userId) async {
   }
 }
 
+Future<void> updateUserByName(String userName, String? title, dynamic value) async {
+  var userBox = Hive.box<User>('clients');
+
+  final userToUpdate = userBox.values.firstWhere(
+        (user) => user.name == userName,
+  );
+
+  if (userToUpdate != null && title != null) {
+    switch (title) {
+      case 'name':
+        userToUpdate.name = value;
+        break;
+      case 'gender':
+        userToUpdate.gender = value;
+        break;
+      case 'plan':
+        userToUpdate.membershipType = value;
+        break;
+      case 'exp_date':
+        userToUpdate.membershipExpiration = value;
+        break;
+      case 'address':
+        userToUpdate.address = value;
+        break;
+      case 'number':
+        userToUpdate.phone = value;
+        break;
+      case 'email':
+        userToUpdate.email = value;
+        break;
+      case 'balance':
+        userToUpdate.balance = value;
+        break;
+      case 'operation':
+        userToUpdate.operation = value;
+        break;
+      default:
+      // Handle unknown titles if necessary
+        break;
+    }
+
+    await userToUpdate.save(); // Save the updated user object back to Hive
+  } else {
+    // Handle the case where the user is not found or title is invalid
+    print('User not found or invalid title provided.');
+  }
+}
+
+
+
+
 Future<void> updateUser(String userId, String? title, dynamic value) async {
   var userBox = Hive.box<User>('clients');
 
@@ -228,18 +279,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           .collection('clients')
                           .doc(widget.client.id)
                           .update({title: controller.text});
-
+                      await updateUser(widget.client.id, title, controller.text);
                 }
               else{
                 if(widget.client.id == ''){
-
+                  await updateUser(widget.client.id, 'operation', 1);
+                  await updateUserByName(widget.client.name, title, controller.text);
                 }
                 else{
 
                   await updateUser(widget.client.id, 'operation', 2);
+                  await updateUser(widget.client.id, title, controller.text);
                 }
               }
-              await updateUser(widget.client.id, title, controller.text);
+
 
               Navigator.pushAndRemoveUntil(
                 context,
@@ -351,9 +404,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
                 else{
-
+                  if(widget.client.id == '')
+                    {
+                      updateUserByName(userToUpdate.name, 'operation', 1);
+                      updateUserByName(userToUpdate.name, 'balance', userToUpdate.balance);
+                      updateUserByName(userToUpdate.name, 'plan', plans[selectedPlanIndex].name);
+                      updateUserByName(userToUpdate.name, 'exp_date', expirationDate.toIso8601String().substring(0, 10));
+                    }
+                  else{
                     userToUpdate.operation=2;
                     await userToUpdate.save();
+                  }
+
 
 
                 }

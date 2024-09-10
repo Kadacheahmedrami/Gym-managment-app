@@ -72,7 +72,7 @@ class _ClientCardState extends State<ClientCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Membership: ${widget.client.membershipType}', style: TextStyle(color: expir, fontSize: 15)),
-              Text(daysLeftUntil(widget.client.membershipExpiration) > 0 ? '${daysLeftUntil(widget.client.membershipExpiration)+1} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
+              Text(daysLeftUntil(widget.client.membershipExpiration)+1 > 0 ? '${daysLeftUntil(widget.client.membershipExpiration)+1} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
             ],
           ),
           children: <Widget>[
