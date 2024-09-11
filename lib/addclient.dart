@@ -10,6 +10,7 @@ import 'package:hive/hive.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:io';
 
 import 'local.dart';
@@ -107,12 +108,19 @@ CollectionReference clients = FirebaseFirestore.instance.collection('clients');
 
 
 
-String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
-  DateTime expirationDate = registrationDate.add(Duration(days: daysLeft));
-  
-  // Format the expiration date to "YYYY-MM-DD"
-  return '${expirationDate.toIso8601String().substring(0, 10)}';
-}
+
+  String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
+    // Convert to UTC to avoid daylight saving time issues
+    DateTime registrationDateUTC = DateTime.utc(registrationDate.year, registrationDate.month, registrationDate.day);
+
+    // Calculate expiration date by adding days directly in UTC
+    DateTime expirationDate = registrationDateUTC.add(Duration(days: daysLeft));
+
+    // Format the expiration date to "YYYY-MM-DD"
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(expirationDate);
+  }
+
 
 
 
@@ -121,6 +129,8 @@ String calculateExpirationDate(DateTime registrationDate, int daysLeft) {
   void initState() {
     plans.addAll(widget.plans);
     super.initState();
+
+
 
   }
 
@@ -400,6 +410,7 @@ void _onConfirm() {
         controller.text = picked.toIso8601String().substring(0, 10); // Formats as YYYY-MM-DD
         if (controller == _registrationDateController) {
           _calculateDaysLeft();
+          _calculateDaysLeft();
         }
       });
     }
@@ -471,7 +482,31 @@ void _onConfirm() {
 
   Widget _buildImagePicker() {
     return GestureDetector(
-      onTap: _pickImage,
+        onTap: () async {
+      bool connected = await isConnected();
+      if (connected) {
+        _pickImage();
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('No internet connection'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+
+      } ,
       child: Container(
         width: 150,
         height: 150,

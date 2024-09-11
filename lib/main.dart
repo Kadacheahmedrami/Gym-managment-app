@@ -41,7 +41,7 @@ class Client {
   final String phone;
   final String email;
   final double balance;
-  final String image_Path;
+  late final String image_Path;
 
   Client({
     required this.id,

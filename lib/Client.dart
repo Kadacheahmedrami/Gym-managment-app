@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:ui';
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,8 +11,10 @@ import 'package:hamza_gym/animation.dart';
 import 'package:hamza_gym/main.dart';
 import 'package:hamza_gym/trainers.dart';
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
 
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:image/image.dart' as img;
 import 'addclient.dart';
 import 'local.dart';
 
@@ -139,6 +145,9 @@ Future<void> updateUser(String userId, String? title, dynamic value) async {
         break;
       case 'operation':
         userToUpdate.operation = value;
+        break;
+      case 'image':
+        userToUpdate.image_Path = value;
         break;
       default:
       // Handle unknown titles if necessary
@@ -515,7 +524,44 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       },
     );
+  }File? _imageFile;
+  String? _imageUrl;
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      final imageBytes = await File(pickedFile.path).readAsBytes();
+      img.Image? originalImage = img.decodeImage(imageBytes);
+
+      if (originalImage != null) {
+        img.Image resizedImage = img.copyResize(originalImage, width: 300, height: 300);
+        final resizedImageFile = File(pickedFile.path)..writeAsBytesSync(img.encodeJpg(resizedImage));
+
+        setState(() {
+          _imageFile = resizedImageFile;
+        });
+
+        if (_imageFile != null) {
+          var refStorage = FirebaseStorage.instance.ref('${widget.client.name}.jpg');
+          await refStorage.putFile(_imageFile!);
+          _imageUrl = await refStorage.getDownloadURL();
+
+          print(_imageUrl);
+
+          // Update the client's image path in Firestore
+          await FirebaseFirestore.instance
+              .collection('clients')
+              .doc(widget.client.id)
+              .update({'image_path': _imageUrl});
+
+          // Optionally, update the local state if needed
+          updateUser(widget.client.id, 'image', _imageUrl!);
+        }
+      }
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -539,45 +585,106 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Profile Image Container
-Container(
-  height: 150,
-  width: 150,
-  decoration: BoxDecoration(
-    gradient: widget.client.image_Path == 'none'
-        ? LinearGradient(
-            colors: [Colors.blue, Colors.purple],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : null, // No gradient if an image is present
-    shape: BoxShape.circle,
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.5),
-        spreadRadius: 4,
-        blurRadius: 10,
-        offset: Offset(0, 5),
-      ),
-    ],
-    image: widget.client.image_Path != 'none'
-        ? DecorationImage(
-            image: NetworkImage(widget.client.image_Path),
-            fit: BoxFit.cover,
-          )
-        : null, // No image if the path is 'none'
-  ),
-  child: widget.client.image_Path == 'none'
-      ? Center(
-          child: Icon(
-            Icons.person,
-            size: 100,
-            color: Colors.white,
-          ),
-        )
-      : null, // No icon if an image is present
-),
+              GestureDetector(
+              onTap: () async {
+        bool connected = await isConnected();
+        if (connected && widget.client.id != '') {
+        await _pickImage();
+        } else {
+          if(widget.client.id == ''){
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('refresher les utulisateur enligne'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+          else
+          {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('No internet connection'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
 
-              const SizedBox(height: 30),
+
+ ;
+        }
+        },
+          child: Container(
+            height: 150,
+            width: 150,
+            decoration: BoxDecoration(
+              gradient: _imageFile == null && widget.client.image_Path == 'none'
+                  ? LinearGradient(
+                colors: [Colors.blue, Colors.purple],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+                  : null,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  spreadRadius: 4,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+              image: _imageFile != null
+                  ? DecorationImage(
+                image: FileImage(_imageFile!),
+                fit: BoxFit.cover,
+              )
+                  : _imageUrl != null
+                  ? DecorationImage(
+                image: NetworkImage(_imageUrl!),
+                fit: BoxFit.cover,
+              )
+                  : widget.client.image_Path != 'none'
+                  ? DecorationImage(
+                image: NetworkImage(widget.client.image_Path),
+                fit: BoxFit.cover,
+              )
+                  : null,
+            ),
+            child: (_imageFile == null && widget.client.image_Path == 'none')
+                ? Center(
+              child: Icon(
+                Icons.person,
+                size: 100,
+                color: Colors.white,
+              ),
+            )
+                : null,
+          ),
+        ),
+
+
+
+          const SizedBox(height: 30),
               // Renew Membership Button
               ElevatedButton(
                 onPressed: _showRenewMembershipDialog,
