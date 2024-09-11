@@ -12,6 +12,26 @@ import 'package:intl/intl.dart';
 import 'addclient.dart';
 import 'local.dart';
 
+Future<void> deleteUserByName(String userName) async {
+  // Open the Hive box
+  var userBox = Hive.box<User>('clients');
+
+  // Find the user by name
+  final userToDelete = userBox.values.firstWhere(
+        (user) => user.name == userName,
+    // Return null if no user is found
+  );
+
+  if (userToDelete != null) {
+    // Delete the user from the box
+    await userToDelete.delete();
+    print('User with name $userName deleted.');
+  } else {
+    print('User with name $userName not found.');
+  }
+}
+
+
 
 Future<void> deleteUserById(String userId) async {
   // Open the Hive box
@@ -468,7 +488,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 else{
                   if(widget.client.id ==''){
-                    deleteUserById(widget.client.id);
+                    deleteUserByName(widget.client.name);
                   }
                   else{
                   await updateUser(widget.client.id, 'operation', -1);

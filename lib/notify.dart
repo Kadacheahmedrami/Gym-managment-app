@@ -18,7 +18,15 @@ class NotificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expiredClients = clients.where((client) {
-      return client.membershipExpiration.isBefore(DateTime.now());
+      return client.membershipExpiration.isBefore(
+        DateTime.now().add(Duration(days: 0)).subtract(Duration(
+          hours: DateTime.now().hour,
+          minutes: DateTime.now().minute,
+          seconds: DateTime.now().second,
+          milliseconds: DateTime.now().millisecond,
+          microseconds: DateTime.now().microsecond,
+        )),
+      );
     }).toList();
 
     return Scaffold(

@@ -24,15 +24,17 @@ class ClientCard extends StatefulWidget {
 class _ClientCardState extends State<ClientCard> {
   int daysLeftUntil(DateTime expirationDate) {
     final today = DateTime.now();
-    return expirationDate.difference(today).inDays;
-  }
+    final todayDateOnly = DateTime(today.year, today.month, today.day);
+    final expirationDateOnly = DateTime(expirationDate.year, expirationDate.month, expirationDate.day);
 
+    return expirationDateOnly.difference(todayDateOnly).inDays;
+  }
 
 
   @override
   Widget build(BuildContext context) {
 
-    Color expir = daysLeftUntil(widget.client.membershipExpiration) <= 0 ? Colors.red : daysLeftUntil(widget.client.membershipExpiration) <= 3 ? Colors.orange : Colors.white;
+    Color expir = daysLeftUntil(widget.client.membershipExpiration)+1 <= 0 ? Colors.red : daysLeftUntil(widget.client.membershipExpiration)+1 <= 4 ? Colors.orange : Colors.white;
 
     return Card(
       shape: RoundedRectangleBorder(
@@ -72,7 +74,7 @@ class _ClientCardState extends State<ClientCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Membership: ${widget.client.membershipType}', style: TextStyle(color: expir, fontSize: 15)),
-              Text(daysLeftUntil(widget.client.membershipExpiration)+1 > 0 ? '${daysLeftUntil(widget.client.membershipExpiration)+1} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
+              Text(daysLeftUntil(widget.client.membershipExpiration) >= 0 ? '${daysLeftUntil(widget.client.membershipExpiration)} Days left': 'expired' , style: TextStyle(color: expir, fontSize: 15)),
             ],
           ),
           children: <Widget>[
