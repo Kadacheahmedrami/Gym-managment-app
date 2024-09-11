@@ -3,9 +3,7 @@ import 'package:hamza_gym/ClientCard.dart';
 import 'package:hamza_gym/main.dart';
 import 'package:hamza_gym/trainers.dart'; // Ensure ClientCard is correctly implemented
 
-Color gren = const Color(0xffEDFE10);
-Color back = const Color(0xff1c2126);
-Color shadow = const Color(0xff2a3036);
+
 
 int daysLeftUntil(String targetDate) {
   DateTime target = DateTime.parse(targetDate);

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:hamza_gym/ClientCard.dart';
+
 import 'package:hamza_gym/main.dart';
 
-Color primaryColor = const Color(0xff1c2126);
-Color accentColor = const Color(0xffEDFE10);
-Color cardColor = const Color(0xff2a3036);
+Color primaryColor = back;
+Color accentColor = gren;
+Color cardColor = shadow;
 Color textColor = Colors.white;
 Color shadowColor = Colors.white10;
 
@@ -26,13 +26,13 @@ class StatisticsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Statistics'),
-        backgroundColor: accentColor,
+        title: Text('Statistics',style: TextStyle(color: theme ? Colors.black : Colors.white),),
+        backgroundColor: gren,
         elevation: 0,
         centerTitle: true,
       ),
       body: Container(
-        color: primaryColor,
+        color: back,
         padding: const EdgeInsets.only(left: 20 ,right: 20),
         child: SingleChildScrollView(  // Added this to handle overflow
           child: Column(
@@ -44,7 +44,7 @@ class StatisticsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: accentColor,
+                  color: gren,
                 ),
               ),
               SizedBox(height: 60),
@@ -56,25 +56,25 @@ class StatisticsPage extends StatelessWidget {
               _buildStatisticCard(
                 title: 'Total Clients',
                 value: totalClients.toString(),
-                color: accentColor,
+                color: gren,
               ),
               SizedBox(height: 15),
               _buildStatisticCard(
                 title: 'Positive Balance Clients',
                 value: positiveBalanceCount.toString(),
-                color: accentColor,
+                color: gren,
               ),
               SizedBox(height: 15),
               _buildStatisticCard(
                 title: 'Negative Balance Clients',
                 value: negativeBalanceCount.toString(),
-                color: accentColor,
+                color: gren,
               ),
               SizedBox(height: 15),
               _buildStatisticCard(
                 title: 'Zero Balance Clients',
                 value: zeroBalanceCount.toString(),
-                color: accentColor,
+                color: gren,
               ),
               SizedBox(height: 15),
               _buildStatisticCard(
@@ -105,7 +105,7 @@ class StatisticsPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4  ),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardColor,
+        color: shadow,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(

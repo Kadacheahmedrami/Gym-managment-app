@@ -325,7 +325,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '',fix: true,)),
+                MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '',fix: true,index: 0,)),
                     (Route<dynamic> route) => false,
               );
 
@@ -452,7 +452,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                        Navigator.pushAndRemoveUntil(
     context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
+    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,index: 0,)),
     (Route<dynamic> route) => false,  // This removes all the previous routes
   );
               },
@@ -507,7 +507,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               Navigator.pushAndRemoveUntil(
     context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,)),
+    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,index: 0,)),
     (Route<dynamic> route) => false,  // This removes all the previous routes
   );
              // Pop the profile page

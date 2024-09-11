@@ -24,10 +24,10 @@ import 'local.dart';
 
 
 
-
-Color gren = const Color(0xffEDFE10);
-Color back = const Color(0xff1c2126);
-Color shadow=  const Color(0xff2a3036);
+bool theme = true;
+Color gren =  Color(0xffEDFE10);
+Color back = Color(0xff1c2126);
+Color shadow=  Color(0xff2a3036);
 
 class Client {
   final String id;
@@ -122,8 +122,8 @@ class SplashScreen extends StatelessWidget {
 
 class Navigation extends StatefulWidget {
   final bool? fix; // Optional boolean parameter
-
-  const Navigation({Key? key, this.fix}) : super(key: key);
+  final int? index;
+  const Navigation({Key? key, this.fix,required this.index}) : super(key: key);
 
   @override
   _NavigationState createState() => _NavigationState();
@@ -152,6 +152,7 @@ List<Client> clients = [];
     bool usedOnce = true;
 
     void refresher() async {
+
       var clientBox = Hive.box<User>('clients');
       List<User> users = clientBox.values.toList();
 
@@ -244,6 +245,7 @@ List<Client> clients = [];
 
 
 setState(() {
+  _currentIndex = widget.index!;
   _initializePlans();
 
 });
@@ -380,6 +382,7 @@ setState(() {
               email: '',
               password: '',
               fix: true,
+              index: _currentIndex,
             ),
           ),
         );
@@ -559,11 +562,11 @@ setState(() {
             ),
             Container(
               margin: EdgeInsets.only(top: 500),
-              child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color: Colors.white70),) ,
+              child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color: theme ? Colors.white70 :Colors.black87 ),) ,
             ),
                  Container(
               margin: EdgeInsets.only(top: 508,right: 5), 
-              child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color: Colors.white30),) ,
+              child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color:theme ? Colors.white30: Colors.black45),) ,
             ),
          
             // Shadow layer
@@ -601,10 +604,38 @@ setState(() {
       
         centerTitle: true,
         backgroundColor: back,
-        foregroundColor: Colors.white ,
+        foregroundColor:theme ? Colors.white : Colors.black,
         title: const Text('Gym Management App'),
         actions: [
+          IconButton(
 
+            icon:  Icon(theme ? Icons.sunny : Icons.nightlight),
+            onPressed: () {
+              setState(() {
+
+
+                if(theme){
+                  back = Color(0xffd9d9d9);
+                  shadow=  Color(0xff6B7A8F);
+                  gren =  Colors.black;
+                  theme = false;
+                  print("dark");
+                }
+                else{
+                back = Color(0xff1c2126);
+                shadow=  Color(0xff2a3036);
+                gren =  Color(0xffEDFE10);
+                theme = true;
+                print("light");
+                }
+
+
+
+              });
+
+
+            },
+          ),
 
           IconButton(
          
@@ -648,7 +679,7 @@ setState(() {
 
         ),
         notchMargin: 8,
-      color: const Color(0xff2A3036),
+      color: shadow,
        // Nav bar color
         child:
         Row(

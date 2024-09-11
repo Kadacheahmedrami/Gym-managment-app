@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/login.dart';
 
+import 'main.dart';
+
 class CustomDrawer extends StatelessWidget {
   
    final email;
@@ -14,12 +16,17 @@ class CustomDrawer extends StatelessWidget {
    Container(
     width: 300,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color(0xffe0e0e0), Color(0xffc8c8c8)], // Gradient colors with white and light tones
+          gradient:theme ? LinearGradient(
+            colors: [Colors.white, Color(0xffe0e0e0), Color(0xffc8c8c8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-          ),
+          ) :LinearGradient(
+            colors: [Colors.black, Color(0xff1d1e22), Color(0xff393f4d)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ) ,
         ),
+
         child: Column(
           children: <Widget>[
             // Drawer Header
@@ -34,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
       ),
     ],
                 gradient: LinearGradient(
-                  colors: [Color(0xfff2f2f2), Colors.white],
+                  colors: [Color(0xfff2f2f2),theme ? Colors.white: shadow],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -45,11 +52,11 @@ class CustomDrawer extends StatelessWidget {
                   CircleAvatar(
 
                     radius: 40,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor:theme ? Colors.grey[300] : shadow,
                     child: Icon(
                       Icons.person,
                       size: 50,
-                      color: Colors.black,
+                      color:theme ? Colors.black : Colors .white,
                     ),
                     
                   ),
@@ -79,16 +86,16 @@ class CustomDrawer extends StatelessWidget {
                   Text(
                     'Kadache Ahmed Rami',
                     style: TextStyle(
-                      color: Colors.black87,
+                      color: theme ? Colors.black87 :Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Version 1.0.0',
+                    'Version 1.3.0',
                     style: TextStyle(
-                      color: Colors.black54,
+                      color:theme ? Colors.black54 : Colors.white,
                     ),
                   ),
                 ],
@@ -102,8 +109,8 @@ class CustomDrawer extends StatelessWidget {
 
   Widget _buildDrawerItem(IconData icon, String text, BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: Colors.black),
-      title: Text(text, style: TextStyle(color: Colors.black)),
+      leading: Icon(icon, color:theme ? Colors.black :Colors.white),
+      title: Text(text, style: TextStyle(color:theme ? Colors.black :Colors.white)),
 onTap: () async {
   await FirebaseAuth.instance.signOut();
 

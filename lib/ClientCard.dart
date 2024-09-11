@@ -6,9 +6,7 @@ import 'package:hamza_gym/trainers.dart';
 import 'package:intl/intl.dart'; // For date formatting
 
 
-Color gren = const Color(0xffEDFE10);
-Color back = const Color(0xff1c2126);
-Color shadow = const Color(0xff2a3036);
+
 
 
 

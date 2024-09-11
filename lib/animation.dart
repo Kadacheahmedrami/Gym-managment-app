@@ -8,7 +8,8 @@ class Draweranimation extends StatefulWidget {
   final email;
   final password;
   final bool? fix;
-  const Draweranimation({required  this.email , required this.password,this.fix,super.key});
+  final int? index;
+  const Draweranimation({required  this.email , required this.password,required this.index,this.fix,super.key});
 
   @override
   _DraweranimationState createState() => _DraweranimationState();
@@ -75,11 +76,16 @@ class _DraweranimationState extends State<Draweranimation>
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          color: Colors.red,
+          gradient:theme ? LinearGradient(
             colors: [Colors.white, Color(0xffe0e0e0), Color(0xffc8c8c8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-          ),
+          ) :LinearGradient(
+            colors: [Colors.black, Color(0xff1d1e22), Color(0xff393f4d)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ) ,
         ),
         child: GestureDetector(
           onPanUpdate: (details) {
@@ -105,7 +111,7 @@ class _DraweranimationState extends State<Draweranimation>
                   scale: _scaleAnimation.value,
                   child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(_curveanimation.value)),
-                    child: Navigation(fix: widget.fix,),
+                    child: Navigation(fix: widget.fix,index: widget.index,),
                   ),
                 ),
               ) ,

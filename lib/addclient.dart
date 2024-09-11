@@ -359,7 +359,7 @@ void _onConfirm() {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '',fix: true,)),
+      MaterialPageRoute(builder: (context) => Draweranimation(email: email, password: '',fix: true,index: 0,)),
           (Route<dynamic> route) => false,
     );
 
@@ -511,7 +511,8 @@ void _onConfirm() {
         width: 150,
         height: 150,
         decoration: BoxDecoration(
-          color: shadow,
+          border: Border.all(color: gren ,width: 3),
+          color: theme ? shadow : Colors.blueGrey[100],
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Center(
@@ -519,9 +520,9 @@ void _onConfirm() {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.camera_alt, color: gren, size: 50),
+                    Icon(Icons.camera_alt, color: theme ? Colors.white : gren, size: 50),
                     SizedBox(height: 10),
-                    Text('Capture', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30)),
+                    Text('Capture', style: TextStyle(color:theme ? Colors.white : gren, fontWeight: FontWeight.bold, fontSize: 30)),
                   ],
                 )
               : ClipRRect(
@@ -551,7 +552,7 @@ void _onConfirm() {
         readOnly: readOnly,
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(color: back),
+          labelStyle: TextStyle(color:theme ? back : Colors.black),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -576,8 +577,8 @@ void _onConfirm() {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _planController.text.isNotEmpty ? _planController.text : null,
-          hint: Text('Type of Plan', style: TextStyle(color: back)),
-          icon: Icon(Icons.arrow_drop_down, color: back),
+          hint: Text('Type of Plan', style: TextStyle(color:theme ? back : Colors.black)),
+          icon: Icon(Icons.arrow_drop_down, color:theme ? back : Colors.black),
           isExpanded: true,
           items: plans.map<DropdownMenuItem<String>>((plan) {
             return DropdownMenuItem<String>(
@@ -621,8 +622,8 @@ void _onConfirm() {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _genderController.text.isNotEmpty ? _genderController.text : null,
-          hint: Text('Gender', style: TextStyle(color: back)),
-          icon: Icon(Icons.arrow_drop_down, color: back),
+          hint: Text('Gender', style: TextStyle(color: theme ? back : Colors.black )),
+          icon: Icon(Icons.arrow_drop_down, color: theme ? back : Colors.black),
           isExpanded: true,
           items: _genders.map<DropdownMenuItem<String>>((gender) {
             return DropdownMenuItem<String>(

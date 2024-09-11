@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+
 import 'package:hive/hive.dart';
 
 import 'animation.dart';
 import 'local.dart';
+import 'main.dart';
 
-Color primaryColor = const Color(0xff1c2126);
-Color accentColor = const Color(0xffEDFE10);
-Color cardColor = const Color(0xff2a3036);
 Color textColor = Colors.white;
 Color shadowColor = Colors.white10;
 
 class PlansPage extends StatefulWidget {
-  List<Plan>? plans ;
+  List<Plan>? plans;
 
   PlansPage({this.plans, Key? key}) : super(key: key);
 
@@ -42,7 +41,8 @@ class _PlansPageState extends State<PlansPage> {
               ),
               TextField(
                 controller: durationController,
-                decoration: InputDecoration(labelText: 'Duration (e.g., 30 days)'),
+                decoration:
+                InputDecoration(labelText: 'Duration (e.g., 30 days)'),
               ),
               TextField(
                 controller: priceController,
@@ -82,7 +82,13 @@ class _PlansPageState extends State<PlansPage> {
 
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email', password: '',fix: true,)),
+                    MaterialPageRoute(
+                        builder: (context) => Draweranimation(
+                          email: 'email',
+                          password: '',
+                          fix: true,
+                          index: 2,
+                        )),
                         (Route<dynamic> route) => false,
                   );
                 }
@@ -95,8 +101,7 @@ class _PlansPageState extends State<PlansPage> {
     );
   }
 
-
-  void _deletePlan(int index) {
+  void _deletePlan(int index) async {
     showDialog(
       context: context,
       builder: (context) {
@@ -109,10 +114,18 @@ class _PlansPageState extends State<PlansPage> {
               child: Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                // Open the Hive box
+                var membershipBox = await Hive.openBox<Membership>('membershipBox');
+
+                // Delete the plan from the Hive box
+                await membershipBox.deleteAt(index);
+
+                // Update the UI
                 setState(() {
                   widget.plans!.removeAt(index);
                 });
+
                 Navigator.of(context).pop();
               },
               child: Text('Delete'),
@@ -128,63 +141,69 @@ class _PlansPageState extends State<PlansPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plans'),
-        backgroundColor: accentColor,
+        title: Text('Plans',style: TextStyle(color: theme ? Colors.black : Colors.white),),
+
+        backgroundColor: gren, // Updated
         elevation: 0,
         centerTitle: true,
       ),
       body: Container(
-        color: primaryColor,
+        color: back, // Updated
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 20),
-            Text(
-              'Our Plans',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: accentColor,
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                _addOrEditPlan();
-              },
-              icon: Icon(Icons.add, color: primaryColor),
-              label: Text(
-                'Add Plan',
-                style: TextStyle(color: primaryColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentColor,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Text(
+                'Our Plans',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: gren, // Updated
                 ),
               ),
-            ),
-            SizedBox(height: 30),
-            _buildStaticPlanCard(),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.plans!.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onLongPress: () {
-                      _deletePlan(index);
-                    },
-                    child: _buildPlanCard(widget.plans![index], index),
-                  );
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  _addOrEditPlan();
                 },
+                icon: Icon(Icons.add, color: back), // Updated
+                label: Text(
+                  'Add Plan',
+                  style: TextStyle(color: back), // Updated
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: gren, // Updated
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 30),
+              _buildStaticPlanCard(),
+              SizedBox(height: 20),
+              Container(
+                height: MediaQuery.of(context).size.height * 0.5, // Set height for ListView
+                child: ListView.builder(
+                  shrinkWrap: true, // Ensures ListView takes only required height
+                  itemCount: widget.plans!.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onLongPress: () {
+                        _deletePlan(index);
+                      },
+                      child: _buildPlanCard(widget.plans![index], index),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+
     );
   }
 
@@ -193,7 +212,7 @@ class _PlansPageState extends State<PlansPage> {
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardColor,
+        color: shadow, // Updated
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -207,11 +226,11 @@ class _PlansPageState extends State<PlansPage> {
         children: [
           CircleAvatar(
             radius: 25,
-            backgroundColor: accentColor,
+            backgroundColor: gren, // Updated
             child: Text(
               plan.name[0],
               style: TextStyle(
-                color: primaryColor,
+                color: back, // Updated
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -249,7 +268,7 @@ class _PlansPageState extends State<PlansPage> {
           ),
           Spacer(),
           IconButton(
-            icon: Icon(Icons.edit, color: accentColor),
+            icon: Icon(Icons.edit, color: gren), // Updated
             onPressed: () {
               _addOrEditPlan(plan: plan, index: index);
             },
@@ -259,8 +278,6 @@ class _PlansPageState extends State<PlansPage> {
     );
   }
 }
-
-
 
 class Plan {
   final String name;
@@ -274,8 +291,6 @@ class Plan {
   });
 }
 
-
-
 Widget _buildStaticPlanCard() {
   final Plan staticPlan = Plan(
     name: '1 month',
@@ -287,7 +302,7 @@ Widget _buildStaticPlanCard() {
     margin: const EdgeInsets.symmetric(vertical: 10),
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
-      color: cardColor,
+      color: shadow, // Updated
       borderRadius: BorderRadius.circular(15),
       boxShadow: [
         BoxShadow(
@@ -301,11 +316,11 @@ Widget _buildStaticPlanCard() {
       children: [
         CircleAvatar(
           radius: 25,
-          backgroundColor: accentColor,
+          backgroundColor: gren, // Updated
           child: Text(
             staticPlan.name[0],
             style: TextStyle(
-              color: primaryColor,
+              color: back, // Updated
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),

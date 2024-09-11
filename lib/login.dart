@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return loggedIn ? Draweranimation(email: _emailController.text, password: '',fix: false,)  : Scaffold(
+    return loggedIn ? Draweranimation(email: _emailController.text, password: '',fix: false,index: 0,)  : Scaffold(
       backgroundColor: back,
       body:loading ? Center(child: CircularProgressIndicator(),) : Center(
         child: ListView(
@@ -149,6 +149,7 @@ class _LoginPageState extends State<LoginPage> {
               email: _emailController.text,
               password: _passwordController.text,
               fix: false,
+              index: 0,
             ),
           ),
         );
