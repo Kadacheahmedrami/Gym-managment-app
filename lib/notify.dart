@@ -30,7 +30,7 @@ class NotificationPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Expired Memberships', style: TextStyle(color: gren)),
         backgroundColor: back,
-         foregroundColor: Colors.white,
+         foregroundColor:theme ? Colors.white : Colors.black,
       ),
       body: ListView.builder(
         itemCount: expiredClients.length,

@@ -247,9 +247,10 @@ CollectionReference clients = FirebaseFirestore.instance.collection('clients');
       ),
     );
   }
+  int oneTimeAdd = 1;
 void _onConfirm() {
 
-  if (_validateFields()) {
+  if (_validateFields() && oneTimeAdd == 1) {
     final String name = _nameController.text;
     final String number = _numberController.text;
     final String plan = _planController.text;
@@ -275,6 +276,9 @@ void _onConfirm() {
         actions: [
           TextButton(
           onPressed: () async {
+            setState(() {
+              oneTimeAdd = 0;
+            });
     // Show a loading indicator
     showDialog(
     context: context,
@@ -384,7 +388,7 @@ void _onConfirm() {
 
   void _calculateBalance() {
     final amountPaid = int.tryParse(_amountController.text) ?? 0;
-    final balance = _selectedPlanPrice - amountPaid;
+    final balance =- _selectedPlanPrice + amountPaid;
     _balanceController.text = balance.toString();
   }
 

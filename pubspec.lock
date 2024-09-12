@@ -270,6 +270,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.6"
+  day_night_switch:
+    dependency: "direct main"
+    description:
+      name: day_night_switch
+      sha256: a9ff6a54533cf46bbb1edea1267f9c02b1c9e9d6240017db8e7b8e9ba844666f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   dbus:
     dependency: transitive
     description:

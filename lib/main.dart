@@ -607,35 +607,7 @@ setState(() {
         foregroundColor:theme ? Colors.white : Colors.black,
         title: const Text('Gym Management App'),
         actions: [
-          IconButton(
 
-            icon:  Icon(theme ? Icons.sunny : Icons.nightlight),
-            onPressed: () {
-              setState(() {
-
-
-                if(theme){
-                  back = Color(0xffd9d9d9);
-                  shadow=  Color(0xff6B7A8F);
-                  gren =  Colors.black;
-                  theme = false;
-                  print("dark");
-                }
-                else{
-                back = Color(0xff1c2126);
-                shadow=  Color(0xff2a3036);
-                gren =  Color(0xffEDFE10);
-                theme = true;
-                print("light");
-                }
-
-
-
-              });
-
-
-            },
-          ),
 
           IconButton(
          

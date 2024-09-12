@@ -56,6 +56,7 @@ dependencies:
   http: ^1.2.2
   provider: ^6.1.2
   animated_theme_switcher: ^2.0.10
+  day_night_switch: ^1.0.4
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -97,6 +98,8 @@ flutter:
   assets:
     - assets/images/logo.svg
     - assets/images/dumbels.svg
+    - assets/images/moon.png
+    - assets/images/sun.png
     - assets/images/menu_button.riv
     
   #   - images/a_dot_ham.jpeg

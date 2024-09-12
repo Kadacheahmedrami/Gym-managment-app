@@ -47,7 +47,7 @@ class _PlansPageState extends State<PlansPage> {
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Price (in \$)'),
+                decoration: InputDecoration(labelText: 'Price (in Da)'),
               ),
             ],
           ),
@@ -258,7 +258,7 @@ class _PlansPageState extends State<PlansPage> {
               ),
               SizedBox(height: 5),
               Text(
-                'Price: \$${plan.price}',
+                'Price: ${plan.price} Da',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[400],
@@ -348,7 +348,7 @@ Widget _buildStaticPlanCard() {
             ),
             SizedBox(height: 5),
             Text(
-              'Price: \$${staticPlan.price}',
+              'Price: ${staticPlan.price} Da',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[400],

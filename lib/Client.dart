@@ -89,7 +89,7 @@ Future<void> updateUserByName(String userName, String? title, dynamic value) asy
         userToUpdate.email = value;
         break;
       case 'balance':
-        userToUpdate.balance = value;
+        userToUpdate.balance =double.parse(value) ;
         break;
       case 'operation':
         userToUpdate.operation = value;
@@ -141,7 +141,7 @@ Future<void> updateUser(String userId, String? title, dynamic value) async {
         userToUpdate.email = value;
         break;
       case 'balance':
-        userToUpdate.balance = value;
+        userToUpdate.balance =double.parse(value) ;
         break;
       case 'operation':
         userToUpdate.operation = value;
@@ -348,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showRenewMembershipDialog() {
     int selectedPlanIndex = 0; // Default to the first plan
-    double updatedBalance = widget.client.balance + plans[selectedPlanIndex].price;
+    double updatedBalance = widget.client.balance - plans[selectedPlanIndex].price;
     TextEditingController _paidAmountController = TextEditingController();
 
     showDialog(
@@ -364,13 +364,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   Column(
                     children: List<Widget>.generate(plans.length, (int index) {
                       return RadioListTile<int>(
-                        title: Text('${plans[index].name} - \$${plans[index].price}'),
+                        title: Text('${plans[index].name} - ${plans[index].price} Da'),
                         value: index,
                         groupValue: selectedPlanIndex,
                         onChanged: (int? value) {
                           setState(() {
                             selectedPlanIndex = value!;
-                            updatedBalance = widget.client.balance + plans[selectedPlanIndex].price;
+                            updatedBalance = widget.client.balance - plans[selectedPlanIndex].price;
                           });
                         },
                       );
@@ -383,7 +383,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     onChanged: (value) {
                       final paidAmount = double.tryParse(value) ?? 0.0;
                       setState(() {
-                        updatedBalance = widget.client.balance + plans[selectedPlanIndex].price - paidAmount;
+                        updatedBalance = widget.client.balance - plans[selectedPlanIndex].price + paidAmount;
                       });
                     },
                   ),
@@ -567,9 +567,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
+        foregroundColor:theme ? Colors.white : Colors.black,
         backgroundColor: back,
-        title: Text('${widget.client.id}\'s Profile', style: TextStyle(color: gren)),
+        title: Text('${widget.client.name} Profile', style: TextStyle(color: gren)),
         elevation: 0,
         actions: [
           IconButton(

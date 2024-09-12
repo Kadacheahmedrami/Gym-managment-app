@@ -3,6 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hamza_gym/drawer.dart';
 import 'package:hamza_gym/main.dart';
+import 'package:day_night_switch/day_night_switch.dart';
+
+const dayColor = Color(0xFFd56352);
+const nightColor = Color(0xFF1e2230);
 
 class Draweranimation extends StatefulWidget {
   final email;
@@ -86,6 +90,7 @@ class _DraweranimationState extends State<Draweranimation>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ) ,
+
         ),
         child: GestureDetector(
           onPanUpdate: (details) {
@@ -101,7 +106,43 @@ class _DraweranimationState extends State<Draweranimation>
           },
           child: Stack(
             children: [
+
               Positioned(child: CustomDrawer(email: widget.email,password: widget.password,fix: widget.fix,)),
+              Container(
+                margin: EdgeInsets.only(top: 700,left: 70),
+
+                child:             DayNightSwitch(
+                  value: theme,
+
+                  sunColor: Colors.amber,
+                  moonColor: Colors.white,
+                  dayColor: dayColor,
+                  nightColor: nightColor,
+                  moonImage: AssetImage('assets/images/moon.png'),
+                  sunImage: AssetImage('assets/images/sun.png'),
+
+                  onChanged: (value) {
+                    setState(() {
+
+                      if(theme){
+                        back = Color(0xffd9d9d9);
+                        shadow=  Color(0xff6B7A8F);
+                        gren =  Colors.black;
+                        theme = false;
+                        print("dark");
+                      }
+                      else{
+                        back = Color(0xff1c2126);
+                        shadow=  Color(0xff2a3036);
+                        gren =  Color(0xffEDFE10);
+                        theme = true;
+                        print("light");
+                      }
+                    });
+                  },
+                ),
+              ),
+
               Transform(
                 alignment: Alignment.center,
                 transform: Matrix4.identity()..setEntry(3,2,0.001)..rotateY(_rotateanimation.value- 30* _rotateanimation.value * pi / 180),
