@@ -405,7 +405,7 @@ void _onConfirm() {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: DateTime(1900),
       lastDate: DateTime(2101),
     );
 
@@ -468,13 +468,22 @@ void _onConfirm() {
                   _onConfirm();
                   },
                   style: ElevatedButton.styleFrom(
+
                     backgroundColor: gren,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 140),
+
                   ),
-                  child: Text('Confirm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: back)),
+                  child:
+                  Container(
+                    width: 270,
+                  height: 60,
+                  child: Center(
+                    child:    Text('Confirm', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: back)),
+                  ),
+                  )
+
                 ),
               ],
             ),

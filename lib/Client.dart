@@ -345,69 +345,95 @@ class _ProfilePageState extends State<ProfilePage> {
     },
   );
 }
-
   void _showRenewMembershipDialog() {
     int selectedPlanIndex = 0; // Default to the first plan
     double updatedBalance = widget.client.balance - plans[selectedPlanIndex].price;
     TextEditingController _paidAmountController = TextEditingController();
+    DateTime selectedDate = widget.client.membershipExpiration; // Start with the current expiration date
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Renew Membership'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    children: List<Widget>.generate(plans.length, (int index) {
-                      return RadioListTile<int>(
-                        title: Text('${plans[index].name} - ${plans[index].price} Da'),
-                        value: index,
-                        groupValue: selectedPlanIndex,
-                        onChanged: (int? value) {
-                          setState(() {
-                            selectedPlanIndex = value!;
-                            updatedBalance = widget.client.balance - plans[selectedPlanIndex].price;
-                          });
-                        },
-                      );
-                    }),
-                  ),
-                  TextField(
-                    controller: _paidAmountController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Paid Amount'),
-                    onChanged: (value) {
-                      final paidAmount = double.tryParse(value) ?? 0.0;
-                      setState(() {
-                        updatedBalance = widget.client.balance - plans[selectedPlanIndex].price + paidAmount;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Updated Balance: \$${updatedBalance.toStringAsFixed(2)}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              );
-            },
+          content: SingleChildScrollView( // Added SingleChildScrollView
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      children: List<Widget>.generate(plans.length, (int index) {
+                        return RadioListTile<int>(
+                          title: Text('${plans[index].name} - ${plans[index].price} Da'),
+                          value: index,
+                          groupValue: selectedPlanIndex,
+                          onChanged: (int? value) {
+                            setState(() {
+                              selectedPlanIndex = value!;
+                              updatedBalance = widget.client.balance - plans[selectedPlanIndex].price;
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                    TextField(
+                      controller: _paidAmountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Paid Amount'),
+                      onChanged: (value) {
+                        final paidAmount = double.tryParse(value) ?? 0.0;
+                        setState(() {
+                          updatedBalance = widget.client.balance - plans[selectedPlanIndex].price + paidAmount;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    // Date picker button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Starting From: ${selectedDate.toIso8601String().substring(0, 10)}'),
+                        TextButton(
+                          onPressed: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now().subtract(const Duration(days: 365)), // Last year
+                              lastDate: DateTime.now().add(const Duration(days: 365)), // Next year
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                selectedDate = pickedDate;
+                              });
+                            }
+                          },
+                          child: const Text('Select Date'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Updated Balance: \$${updatedBalance.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () async{
+              onPressed: () async {
                 final paidAmount = double.tryParse(_paidAmountController.text) ?? 0.0;
 
-  DateTime expirationDate = widget.client.membershipExpiration.add(Duration(days:int.parse(plans[selectedPlanIndex].duration) ));
+                // Calculate the new expiration date based on selected date
+                DateTime expirationDate = selectedDate.add(Duration(days: int.parse(plans[selectedPlanIndex].duration)));
 
-  // Format the expiration date to "YYYY-MM-DD"
-  print(widget.client.membershipExpiration);
-   print(expirationDate.toIso8601String().substring(0, 10));
-   print(updatedBalance.toString());
-   print( plans[selectedPlanIndex].name);
+                print(selectedDate);  // Selected start date
+                print(expirationDate.toIso8601String().substring(0, 10));  // New expiration date
+                print(updatedBalance.toString());
+                print(plans[selectedPlanIndex].name);
 
                 var userBox = Hive.box<User>('clients');
 
@@ -418,43 +444,36 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
 
                 userToUpdate.balance = updatedBalance;
-                userToUpdate.membershipType = plans[selectedPlanIndex].name ;
-                userToUpdate.membershipExpiration =  expirationDate.toIso8601String().substring(0, 10);
-
+                userToUpdate.membershipType = plans[selectedPlanIndex].name;
+                userToUpdate.membershipExpiration = expirationDate.toIso8601String().substring(0, 10);
 
                 bool connected = await isConnected();
-                if(widget.client.id != '' && connected)
-                {
+                if (widget.client.id != '' && connected) {
                   await userToUpdate.save();
                   await FirebaseFirestore.instance.collection('clients').doc(widget.client.id).update({
-                    'balance':updatedBalance.toString() ,
-                    'plan' : widget.plans[selectedPlanIndex].name,
-                    'exp_date':expirationDate.toIso8601String().substring(0, 10)}
-                  );
-                }
-                else{
-                  if(widget.client.id == '')
-                    {
-                      updateUserByName(userToUpdate.name, 'operation', 1);
-                      updateUserByName(userToUpdate.name, 'balance', userToUpdate.balance);
-                      updateUserByName(userToUpdate.name, 'plan', plans[selectedPlanIndex].name);
-                      updateUserByName(userToUpdate.name, 'exp_date', expirationDate.toIso8601String().substring(0, 10));
-                    }
-                  else{
-                    userToUpdate.operation=2;
+                    'balance': updatedBalance.toString(),
+                    'plan': widget.plans[selectedPlanIndex].name,
+                    'exp_date': expirationDate.toIso8601String().substring(0, 10)
+                  });
+                } else {
+                  if (widget.client.id == '') {
+                    updateUserByName(userToUpdate.name, 'operation', 1);
+                    updateUserByName(userToUpdate.name, 'balance', userToUpdate.balance);
+                    updateUserByName(userToUpdate.name, 'plan', plans[selectedPlanIndex].name);
+                    updateUserByName(userToUpdate.name, 'exp_date', expirationDate.toIso8601String().substring(0, 10));
+                  } else {
+                    userToUpdate.operation = 2;
                     await userToUpdate.save();
                   }
-
-
-
                 }
 
-
-                       Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => Draweranimation(email: 'email',password: '',fix: true,index: 0,)),
-    (Route<dynamic> route) => false,  // This removes all the previous routes
-  );
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Draweranimation(email: 'email', password: '', fix: true, index: 0),
+                  ),
+                      (Route<dynamic> route) => false,
+                );
               },
               child: const Text('Confirm'),
             ),

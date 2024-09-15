@@ -565,28 +565,41 @@ setState(() {
               child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color: theme ? Colors.white70 :Colors.black87 ),) ,
             ),
                  Container(
-              margin: EdgeInsets.only(top: 508,right: 5), 
+              margin: EdgeInsets.only(top: 508,right: 5),
+
               child:   Text('Made by Kadache',style: TextStyle(fontSize: 30,color:theme ? Colors.white30: Colors.black45),) ,
             ),
          
             // Shadow layer
-            Positioned(
-              child: SvgPicture.asset(
-                'assets/images/logo.svg',
-                semanticsLabel: 'Logo',
-                height: 380.0, // Adjust size as needed
-                color: gren.withOpacity(0.6),
-                 // Apply the glow color with opacity
-              ),
-            ),
+
             // Original logo layer
-            SvgPicture.asset(
-              'assets/images/logo.svg',
-              semanticsLabel: 'Logo',
+  Container(
+        height: 308,
+    width: 308,
+    margin: EdgeInsets.only(bottom: 199),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+        boxShadow: [BoxShadow(color: Colors.white70,blurRadius: 10)],
+        borderRadius: BorderRadius.circular(20)
+    ),
 
+  ),
+            Container(
+              height: 300,
+              width: 300,
+              margin: EdgeInsets.only(bottom: 200),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
 
-              height: 350.0, // Adjust size as needed
-            ),
+              ),
+              child:             Image.asset(
+                'assets/images/logo.png',
+
+                fit: BoxFit.cover,
+
+              ),
+            )
+
           ],
         ),
 

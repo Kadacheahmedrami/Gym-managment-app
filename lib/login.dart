@@ -53,12 +53,23 @@ class _LoginPageState extends State<LoginPage> {
         child: ListView(
           children: [
             Column(
+
               children: [
-                SvgPicture.asset(
-                  'assets/images/logo.svg',
-                  semanticsLabel: 'Logo',
-                  height: 380.0,
+                Container(
+
+                  decoration: BoxDecoration(
+
+                    boxShadow: [BoxShadow(color:Colors.white70, blurRadius: 10)],
+                    borderRadius: BorderRadius.circular(20)
+                  ),
+                  margin: EdgeInsets.only(bottom: 40 ,top: 100),
+                  child:   Image.asset(
+                    'assets/images/logo.png',
+
+                    height: 250.0,
+                  ),
                 ),
+
                 const Text(
                   'Sign in to your Account',
                   style: TextStyle(fontSize: 24, color: Colors.white),

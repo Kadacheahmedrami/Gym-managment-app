@@ -109,7 +109,7 @@ class _DraweranimationState extends State<Draweranimation>
 
               Positioned(child: CustomDrawer(email: widget.email,password: widget.password,fix: widget.fix,)),
               Container(
-                margin: EdgeInsets.only(top: 700,left: 70),
+                margin: EdgeInsets.only(top: MediaQuery.of(context).size.height *0.82,left: 70),
 
                 child:             DayNightSwitch(
                   value: theme,
